@@ -286,11 +286,12 @@ const deleteGroup = (groupId) => {
         <div className="absolute bottom-20 left-10 text-8xl opacity-5">♥</div>
         
         <div className="max-w-md mx-auto relative z-10">
+        {/* Profile Menu - Top Right */}
         {user && user !== 'guest' && user.email && (
-          <div className="text-right mb-4 relative">
+          <div className="absolute top-6 right-6 z-30">
             <button
               onClick={() => setShowProfileMenu(!showProfileMenu)}
-              className="w-10 h-10 bg-gradient-to-br from-red-600 to-red-700 rounded-full flex items-center justify-center font-bold text-white border-2 border-amber-500/50 hover:from-red-700 hover:to-red-800 transition"
+              className="w-12 h-12 bg-gradient-to-br from-red-600 to-red-700 rounded-full flex items-center justify-center font-bold text-white border-2 border-amber-500/50 hover:from-red-700 hover:to-red-800 transition shadow-lg"
             >
               {user.displayName ? user.displayName[0].toUpperCase() : user.email[0].toUpperCase()}
             </button>
@@ -315,8 +316,7 @@ const deleteGroup = (groupId) => {
                     <button
                       onClick={() => {
                         setShowProfileMenu(false);
-                        // TODO: Navigate to profile
-                        alert('Profile page coming soon!');
+                        setScreen('profile');
                       }}
                       className="w-full flex items-center gap-3 px-4 py-3 hover:bg-amber-500/20 rounded-lg transition text-left text-amber-200"
                     >
@@ -329,8 +329,7 @@ const deleteGroup = (groupId) => {
                     <button
                       onClick={() => {
                         setShowProfileMenu(false);
-                        // TODO: Navigate to settings
-                        alert('Settings page coming soon!');
+                        setScreen('settings');
                       }}
                       className="w-full flex items-center gap-3 px-4 py-3 hover:bg-amber-500/20 rounded-lg transition text-left text-amber-200"
                     >
