@@ -917,7 +917,15 @@ const updateQuickAmount = (index, value) => {
                       ))}
                     </div>
                     <div className="flex gap-2">
-                      <input type="number" step="0.01" value={buyInInput} onChange={(e) => setBuyInInput(e.target.value)} className="flex-1 bg-green-900/50 text-white px-3 py-2 rounded-lg border border-amber-500/20" />
+                      <input 
+                        type="text"
+                        inputMode="decimal"
+                        value={buyInInput} 
+                        onChange={(e) => setBuyInInput(e.target.value)}
+                        onFocus={(e) => e.target.select()}
+                        className="flex-1 bg-green-900/50 text-white px-3 py-2 rounded-lg border border-amber-500/20"
+                        placeholder="0.00"
+                      />
                       <button onClick={() => addBuyIn(player.id, buyInInput)} className="bg-red-600 px-4 py-2 rounded-lg border border-amber-500/30"><Plus size={18} /></button>
                     </div>
                   </div>
@@ -990,15 +998,50 @@ const updateQuickAmount = (index, value) => {
             {!balanced && totalChips > 0 && <div className="mt-2 text-xs text-red-400">⚠️ Off by ${centsToDollars(Math.abs(totalPot - totalChips))}</div>}
           </div>
           <div className="space-y-3 mb-6">
-            {players.map(p => (
-              <div key={p.id} className="bg-black/40 rounded-xl p-4 border-2 border-amber-500/30">
-                <div className="font-semibold text-white mb-1">{p.name}</div>
-                <div className="text-sm text-amber-300 mb-2">Bought: ${centsToDollars(p.totalBuyInCents)}</div>
-                <input type="number" step="0.01" value={p.finalChipsCents ? centsToDollars(p.finalChipsCents) : ''} onChange={(e) => {
-                  setPlayers(players.map(pl => pl.id === p.id ? {...pl, finalChipsCents: dollarsToCents(e.target.value)} : pl));
-                }} className="w-full bg-green-900/50 text-white px-3 py-2 rounded-lg border border-amber-500/20" placeholder="Final $" />
-              </div>
-            ))}
+            {players.map((player, index) => {
+              const isLastPlayer = index === players.length - 1;
+              const otherPlayersHaveChips = players.slice(0, -1).every(p => p.finalChipsCents !== null);
+              const canAutoCalculate = isLastPlayer && otherPlayersHaveChips;
+              
+              return (
+                <div key={player.id} className="bg-green-800/50 rounded-lg p-4">
+                  <div className="font-semibold mb-2">{player.name}</div>
+                  <div className="text-sm text-amber-300/70 mb-3">Buy-in: ${centsToDollars(player.totalBuyInCents)}</div>
+                  <label className="block text-sm text-amber-300 mb-2">Final Chips ($)</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={player.finalChipsCents !== null ? centsToDollars(player.finalChipsCents) : ''}
+                      onChange={(e) => {
+                        const updatedPlayers = players.map(p =>
+                          p.id === player.id ? { ...p, finalChipsCents: dollarsToCents(e.target.value) } : p
+                        );
+                        setPlayers(updatedPlayers);
+                      }}
+                      onFocus={(e) => e.target.select()}
+                      className="flex-1 bg-green-900/50 text-white px-4 py-3 rounded-lg border border-amber-500/20"
+                      placeholder="0.00"
+                    />
+                    {canAutoCalculate && (
+                      <button
+                        onClick={() => {
+                          const otherChipsTotal = players.slice(0, -1).reduce((sum, p) => sum + (p.finalChipsCents || 0), 0);
+                          const autoChips = totalPot - otherChipsTotal;
+                          const updatedPlayers = players.map(p =>
+                            p.id === player.id ? { ...p, finalChipsCents: autoChips } : p
+                          );
+                          setPlayers(updatedPlayers);
+                        }}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg whitespace-nowrap font-semibold"
+                      >
+                        Auto
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
           <button onClick={calculateSettlement} disabled={!balanced} className="w-full bg-red-600 disabled:bg-gray-600 text-white font-bold py-4 rounded-xl mb-3 border-2 border-amber-500/50">CALCULATE</button>
           <button onClick={() => setScreen('game')} className="w-full bg-black/40 text-amber-300 border border-amber-500/30 py-3 rounded-lg">Back</button>
