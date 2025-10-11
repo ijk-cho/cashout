@@ -918,10 +918,15 @@ const updateQuickAmount = (index, value) => {
                     </div>
                     <div className="flex gap-2">
                       <input 
-                        type="text"
-                        inputMode="decimal"
+                        type="tel"
                         value={buyInInput} 
-                        onChange={(e) => setBuyInInput(e.target.value)}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          // Allow empty, numbers, and decimal point (max 2 decimal places)
+                          if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
+                            setBuyInInput(value);
+                          }
+                        }}
                         onFocus={(e) => e.target.select()}
                         className="flex-1 bg-green-900/50 text-white px-3 py-2 rounded-lg border border-amber-500/20"
                         placeholder="0.00"
@@ -1001,44 +1006,52 @@ const updateQuickAmount = (index, value) => {
             {players.map((player, index) => {
               const isLastPlayer = index === players.length - 1;
               const otherPlayersHaveChips = players.slice(0, -1).every(p => p.finalChipsCents !== null);
-              const canAutoCalculate = isLastPlayer && otherPlayersHaveChips;
+              
+              // Auto-calculate for last player
+              if (isLastPlayer && otherPlayersHaveChips) {
+                const otherChipsTotal = players.slice(0, -1).reduce((sum, p) => sum + (p.finalChipsCents || 0), 0);
+                const autoChips = totalPot - otherChipsTotal;
+                
+                // Automatically set it if not already set or different
+                if (player.finalChipsCents !== autoChips) {
+                  setTimeout(() => {
+                    const updatedPlayers = players.map(p =>
+                      p.id === player.id ? { ...p, finalChipsCents: autoChips } : p
+                    );
+                    setPlayers(updatedPlayers);
+                  }, 0);
+                }
+              }
               
               return (
                 <div key={player.id} className="bg-green-800/50 rounded-lg p-4">
                   <div className="font-semibold mb-2">{player.name}</div>
                   <div className="text-sm text-amber-300/70 mb-3">Buy-in: ${centsToDollars(player.totalBuyInCents)}</div>
                   <label className="block text-sm text-amber-300 mb-2">Final Chips ($)</label>
-                  <div className="flex gap-2">
+                  {isLastPlayer && otherPlayersHaveChips ? (
+                    <div className="w-full bg-blue-900/30 text-white px-4 py-3 rounded-lg border-2 border-blue-500/50 font-bold text-lg flex items-center justify-between">
+                      <span>${centsToDollars(player.finalChipsCents || 0)}</span>
+                      <span className="text-xs text-blue-300">AUTO</span>
+                    </div>
+                  ) : (
                     <input
-                      type="text"
-                      inputMode="decimal"
+                      type="tel"
                       value={player.finalChipsCents !== null ? centsToDollars(player.finalChipsCents) : ''}
                       onChange={(e) => {
-                        const updatedPlayers = players.map(p =>
-                          p.id === player.id ? { ...p, finalChipsCents: dollarsToCents(e.target.value) } : p
-                        );
-                        setPlayers(updatedPlayers);
-                      }}
-                      onFocus={(e) => e.target.select()}
-                      className="flex-1 bg-green-900/50 text-white px-4 py-3 rounded-lg border border-amber-500/20"
-                      placeholder="0.00"
-                    />
-                    {canAutoCalculate && (
-                      <button
-                        onClick={() => {
-                          const otherChipsTotal = players.slice(0, -1).reduce((sum, p) => sum + (p.finalChipsCents || 0), 0);
-                          const autoChips = totalPot - otherChipsTotal;
+                        const value = e.target.value;
+                        // Allow empty, numbers, and decimal point
+                        if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
                           const updatedPlayers = players.map(p =>
-                            p.id === player.id ? { ...p, finalChipsCents: autoChips } : p
+                            p.id === player.id ? { ...p, finalChipsCents: value === '' ? null : dollarsToCents(value) } : p
                           );
                           setPlayers(updatedPlayers);
-                        }}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg whitespace-nowrap font-semibold"
-                      >
-                        Auto
-                      </button>
-                    )}
-                  </div>
+                        }
+                      }}
+                      onFocus={(e) => e.target.select()}
+                      className="w-full bg-green-900/50 text-white px-4 py-3 rounded-lg border border-amber-500/20"
+                      placeholder="0.00"
+                    />
+                  )}
                 </div>
               );
             })}
