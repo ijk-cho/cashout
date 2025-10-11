@@ -75,6 +75,33 @@ const PokerSettleApp = () => {
   const [unsubscribe, setUnsubscribe] = useState(null);
   const [user, setUser] = useState(undefined); // undefined = loading, null = guest, object = signed in
   const [authChecked, setAuthChecked] = useState(false);
+  // Settings state
+  const [settingsTab, setSettingsTab] = useState('account');
+  const [userSettings, setUserSettings] = useState({
+    displayName: user?.displayName || 'Poker Player',
+    email: user?.email || '',
+    defaultBuyIn: 100,
+    preferredPayment: 'venmo',
+    currency: 'USD',
+    quickBuyInAmounts: [20, 50, 100, 200, 500],
+    soundEnabled: true
+  });
+
+  // Edit states
+  const [editingDisplayName, setEditingDisplayName] = useState(false);
+  const [editingEmail, setEditingEmail] = useState(false);
+  const [editingPassword, setEditingPassword] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [editingQuickAmounts, setEditingQuickAmounts] = useState(false);
+
+  // Form fields
+  const [newDisplayName, setNewDisplayName] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [tempQuickAmounts, setTempQuickAmounts] = useState([]);
   const quickAmounts = [5, 10, 20, 50, 100];
 
   useEffect(() => {
@@ -172,6 +199,77 @@ const deleteGroup = (groupId) => {
   const updated = savedGroups.filter(g => g.id !== groupId);
   setSavedGroups(updated);
   localStorage.setItem('pokerGameGroups', JSON.stringify(updated));
+};
+
+// Settings functions
+const saveDisplayName = () => {
+  if (newDisplayName.trim()) {
+    setUserSettings({...userSettings, displayName: newDisplayName.trim()});
+    setEditingDisplayName(false);
+    setNewDisplayName('');
+    alert('Display name updated successfully!');
+  }
+};
+
+const saveEmail = () => {
+  if (newEmail.trim() && currentPassword) {
+    setUserSettings({...userSettings, email: newEmail.trim()});
+    setEditingEmail(false);
+    setNewEmail('');
+    setCurrentPassword('');
+    alert('Email updated successfully!');
+  } else {
+    alert('Please enter new email and current password');
+  }
+};
+
+const savePassword = () => {
+  if (currentPassword && newPassword && confirmPassword) {
+    if (newPassword === confirmPassword) {
+      if (newPassword.length >= 6) {
+        setEditingPassword(false);
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        alert('Password updated successfully!');
+      } else {
+        alert('Password must be at least 6 characters');
+      }
+    } else {
+      alert('New passwords do not match');
+    }
+  } else {
+    alert('Please fill all password fields');
+  }
+};
+
+const deleteAccount = () => {
+  if (deleteConfirmText === 'DELETE') {
+    alert('Account deleted. Logging out...');
+    signOut(auth);
+  } else {
+    alert('Please type DELETE to confirm');
+  }
+};
+
+const saveQuickAmounts = () => {
+  setUserSettings({...userSettings, quickBuyInAmounts: tempQuickAmounts});
+  setEditingQuickAmounts(false);
+  alert('Quick buy-in amounts updated!');
+};
+
+const addQuickAmount = () => {
+  setTempQuickAmounts([...tempQuickAmounts, 100]);
+};
+
+const removeQuickAmount = (index) => {
+  setTempQuickAmounts(tempQuickAmounts.filter((_, i) => i !== index));
+};
+
+const updateQuickAmount = (index, value) => {
+  const newAmounts = [...tempQuickAmounts];
+  newAmounts[index] = parseInt(value) || 0;
+  setTempQuickAmounts(newAmounts);
 };
 
   const resetApp = () => {
@@ -982,6 +1080,376 @@ if (screen === 'stats') {
           </>
         )}
         <button onClick={() => setScreen('home')} className="w-full bg-black/40 text-amber-300 border border-amber-500/30 py-3 rounded-lg">Back</button>
+      </div>
+    </div>
+  );
+}
+
+if (screen === 'settings') {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 text-white p-6">
+      <div className="max-w-md mx-auto pt-8">
+        <h2 className="text-3xl font-bold mb-6 text-amber-400">SETTINGS</h2>
+        
+        {/* Tab Navigation */}
+        <div className="flex gap-2 mb-6 bg-black/40 rounded-lg p-1">
+          <button
+            onClick={() => setSettingsTab('account')}
+            className={`flex-1 py-2 rounded-lg transition ${
+              settingsTab === 'account' ? 'bg-amber-600 text-white' : 'text-amber-300'
+            }`}
+          >
+            Account
+          </button>
+          <button
+            onClick={() => setSettingsTab('preferences')}
+            className={`flex-1 py-2 rounded-lg transition ${
+              settingsTab === 'preferences' ? 'bg-amber-600 text-white' : 'text-amber-300'
+            }`}
+          >
+            Preferences
+          </button>
+        </div>
+
+        {/* Account Settings Tab */}
+        {settingsTab === 'account' && (
+          <div className="space-y-4">
+            {/* Display Name */}
+            <div className="bg-black/40 rounded-lg p-4 border border-amber-500/30">
+              <label className="block text-sm text-amber-300 mb-2 font-semibold">DISPLAY NAME</label>
+              {!editingDisplayName ? (
+                <div className="flex items-center justify-between">
+                  <span className="text-white text-lg">{userSettings.displayName}</span>
+                  <button
+                    onClick={() => {
+                      setEditingDisplayName(true);
+                      setNewDisplayName(userSettings.displayName);
+                    }}
+                    className="px-3 py-1 bg-amber-600 hover:bg-amber-700 rounded text-white text-sm"
+                  >
+                    Edit
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    value={newDisplayName}
+                    onChange={(e) => setNewDisplayName(e.target.value)}
+                    className="w-full px-3 py-2 bg-green-900/50 border border-amber-500/20 rounded text-white"
+                    placeholder="Enter new display name"
+                  />
+                  <div className="flex gap-2">
+                    <button onClick={saveDisplayName} className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded text-white">
+                      Save
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditingDisplayName(false);
+                        setNewDisplayName('');
+                      }}
+                      className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-white"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Email */}
+            <div className="bg-black/40 rounded-lg p-4 border border-amber-500/30">
+              <label className="block text-sm text-amber-300 mb-2 font-semibold">EMAIL</label>
+              {!editingEmail ? (
+                <div className="flex items-center justify-between">
+                  <span className="text-white text-lg">{userSettings.email}</span>
+                  <button
+                    onClick={() => {
+                      setEditingEmail(true);
+                      setNewEmail(userSettings.email);
+                    }}
+                    className="px-3 py-1 bg-amber-600 hover:bg-amber-700 rounded text-white text-sm"
+                  >
+                    Edit
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <input
+                    type="email"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    className="w-full px-3 py-2 bg-green-900/50 border border-amber-500/20 rounded text-white"
+                    placeholder="Enter new email"
+                  />
+                  <input
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="w-full px-3 py-2 bg-green-900/50 border border-amber-500/20 rounded text-white"
+                    placeholder="Current password (for re-auth)"
+                  />
+                  <div className="flex gap-2">
+                    <button onClick={saveEmail} className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded text-white">
+                      Save
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditingEmail(false);
+                        setNewEmail('');
+                        setCurrentPassword('');
+                      }}
+                      className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-white"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Password */}
+            <div className="bg-black/40 rounded-lg p-4 border border-amber-500/30">
+              <label className="block text-sm text-amber-300 mb-2 font-semibold">PASSWORD</label>
+              {!editingPassword ? (
+                <div className="flex items-center justify-between">
+                  <span className="text-white text-lg">••••••••</span>
+                  <button
+                    onClick={() => setEditingPassword(true)}
+                    className="px-3 py-1 bg-amber-600 hover:bg-amber-700 rounded text-white text-sm"
+                  >
+                    Change
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <input
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="w-full px-3 py-2 bg-green-900/50 border border-amber-500/20 rounded text-white"
+                    placeholder="Current password"
+                  />
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full px-3 py-2 bg-green-900/50 border border-amber-500/20 rounded text-white"
+                    placeholder="New password (min 6 chars)"
+                  />
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full px-3 py-2 bg-green-900/50 border border-amber-500/20 rounded text-white"
+                    placeholder="Confirm new password"
+                  />
+                  <div className="flex gap-2">
+                    <button onClick={savePassword} className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded text-white">
+                      Update
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditingPassword(false);
+                        setCurrentPassword('');
+                        setNewPassword('');
+                        setConfirmPassword('');
+                      }}
+                      className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-white"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Delete Account */}
+            <div className="bg-red-900/20 border border-red-700 rounded-lg p-4">
+              <label className="block text-sm text-red-400 mb-2 font-semibold">⚠️ DANGER ZONE</label>
+              {!showDeleteConfirm ? (
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded text-white"
+                >
+                  Delete Account
+                </button>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-red-300 text-sm mb-2">
+                    Type <strong>DELETE</strong> to confirm
+                  </p>
+                  <input
+                    type="text"
+                    value={deleteConfirmText}
+                    onChange={(e) => setDeleteConfirmText(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-800 border border-red-500 rounded text-white"
+                    placeholder="Type DELETE"
+                  />
+                  <div className="flex gap-2">
+                    <button onClick={deleteAccount} className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded text-white">
+                      Confirm Delete
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowDeleteConfirm(false);
+                        setDeleteConfirmText('');
+                      }}
+                      className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-white"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}     
+    
+        {/* Game Preferences Tab */}
+        {settingsTab === 'preferences' && (
+          <div className="space-y-4">
+            {/* Default Buy-in */}
+            <div className="bg-black/40 rounded-lg p-4 border border-amber-500/30">
+              <label className="block text-sm text-amber-300 mb-2 font-semibold">DEFAULT BUY-IN</label>
+              <div className="flex items-center gap-2">
+                <span className="text-amber-400">$</span>
+                <input
+                  type="number"
+                  value={userSettings.defaultBuyIn}
+                  onChange={(e) => setUserSettings({...userSettings, defaultBuyIn: parseInt(e.target.value) || 0})}
+                  className="w-32 px-3 py-2 bg-green-900/50 border border-amber-500/20 rounded text-white"
+                  min="0"
+                />
+                <span className="text-gray-400 text-sm">(auto-fills new sessions)</span>
+              </div>
+            </div>
+
+            {/* Payment Method */}
+            <div className="bg-black/40 rounded-lg p-4 border border-amber-500/30">
+              <label className="block text-sm text-amber-300 mb-2 font-semibold">PREFERRED PAYMENT</label>
+              <select
+                value={userSettings.preferredPayment}
+                onChange={(e) => setUserSettings({...userSettings, preferredPayment: e.target.value})}
+                className="w-full px-3 py-2 bg-green-900/50 border border-amber-500/20 rounded text-white"
+              >
+                <option value="venmo">Venmo</option>
+                <option value="cashapp">Cash App</option>
+                <option value="zelle">Zelle</option>
+                <option value="paypal">PayPal</option>
+                <option value="cash">Cash</option>
+              </select>
+            </div>
+
+            {/* Currency */}
+            <div className="bg-black/40 rounded-lg p-4 border border-amber-500/30">
+              <label className="block text-sm text-amber-300 mb-2 font-semibold">CURRENCY</label>
+              <select
+                value={userSettings.currency}
+                onChange={(e) => setUserSettings({...userSettings, currency: e.target.value})}
+                className="w-full px-3 py-2 bg-green-900/50 border border-amber-500/20 rounded text-white"
+              >
+                <option value="USD">USD - US Dollar ($)</option>
+                <option value="EUR">EUR - Euro (€)</option>
+                <option value="GBP">GBP - British Pound (£)</option>
+                <option value="CAD">CAD - Canadian Dollar ($)</option>
+                <option value="AUD">AUD - Australian Dollar ($)</option>
+                <option value="JPY">JPY - Japanese Yen (¥)</option>
+              </select>
+            </div>
+
+            {/* Quick Buy-in Amounts */}
+            <div className="bg-black/40 rounded-lg p-4 border border-amber-500/30">
+              <label className="block text-sm text-amber-300 mb-2 font-semibold">QUICK BUY-IN AMOUNTS</label>
+              {!editingQuickAmounts ? (
+                <div>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {userSettings.quickBuyInAmounts.map((amount, index) => (
+                      <span key={index} className="px-3 py-1 bg-green-600 text-white rounded-lg">
+                        ${amount}
+                      </span>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setEditingQuickAmounts(true);
+                      setTempQuickAmounts([...userSettings.quickBuyInAmounts]);
+                    }}
+                    className="px-3 py-1 bg-amber-600 hover:bg-amber-700 rounded text-white text-sm"
+                  >
+                    Customize
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    {tempQuickAmounts.map((amount, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <span className="text-amber-400">$</span>
+                        <input
+                          type="number"
+                          value={amount}
+                          onChange={(e) => updateQuickAmount(index, e.target.value)}
+                          className="w-32 px-3 py-2 bg-green-900/50 border border-amber-500/20 rounded text-white"
+                          min="0"
+                        />
+                        <button
+                          onClick={() => removeQuickAmount(index)}
+                          className="p-2 text-red-400 hover:text-red-300"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={addQuickAmount}
+                    className="px-3 py-1 bg-gray-600 hover:bg-gray-700 rounded text-white text-sm"
+                  >
+                    + Add Amount
+                  </button>
+                  <div className="flex gap-2 mt-3">
+                    <button onClick={saveQuickAmounts} className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded text-white">
+                      Save
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditingQuickAmounts(false);
+                        setTempQuickAmounts([]);
+                      }}
+                      className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-white"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Sound Effects */}
+            <div className="bg-black/40 rounded-lg p-4 border border-amber-500/30">
+              <label className="block text-sm text-amber-300 mb-2 font-semibold">SOUND EFFECTS</label>
+              <div className="flex items-center justify-between">
+                <span className="text-white">{userSettings.soundEnabled ? 'Enabled' : 'Disabled'}</span>
+                <button
+                  onClick={() => setUserSettings({...userSettings, soundEnabled: !userSettings.soundEnabled})}
+                  className={`relative w-14 h-7 rounded-full transition-colors ${
+                    userSettings.soundEnabled ? 'bg-green-600' : 'bg-gray-600'
+                  }`}
+                >
+                  <div
+                    className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full transition-transform ${
+                      userSettings.soundEnabled ? 'transform translate-x-7' : ''
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}   
+        <button onClick={() => setScreen('home')} className="w-full bg-black/40 text-amber-300 border border-amber-500/30 py-3 rounded-lg mt-6">
+          Back
+        </button>
       </div>
     </div>
   );
