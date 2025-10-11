@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { DollarSign, Users, Plus, Share2, Copy, Check, TrendingUp, History, ArrowRight } from 'lucide-react';
+import { createGame, getGameByCode, updateGame, subscribeToGame } from './gameService';
 
 const dollarsToCents = (dollarString) => {
   const cleaned = dollarString.replace(/[$\s,]/g, '');
@@ -10,15 +11,6 @@ const dollarsToCents = (dollarString) => {
 
 const centsToDollars = (cents) => {
   return (cents / 100).toFixed(2);
-};
-
-const generateGameCode = () => {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = '';
-  for (let i = 0; i < 6; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return code;
 };
 
 const optimizeSettlement = (players) => {
@@ -60,6 +52,7 @@ const optimizeSettlement = (players) => {
 const PokerSettleApp = () => {
   const [screen, setScreen] = useState('home');
   const [gameCode, setGameCode] = useState('');
+  const [gameId, setGameId] = useState(null);
   const [inputCode, setInputCode] = useState('');
   const [playerName, setPlayerName] = useState('');
   const [venmoUsername, setVenmoUsername] = useState('');
@@ -69,6 +62,7 @@ const PokerSettleApp = () => {
   const [settlements, setSettlements] = useState([]);
   const [gameHistory, setGameHistory] = useState([]);
   const [copied, setCopied] = useState(false);
+  const [unsubscribe, setUnsubscribe] = useState(null);
   const quickAmounts = [5, 10, 20, 50, 100];
 
   useEffect(() => {
@@ -77,6 +71,14 @@ const PokerSettleApp = () => {
       setGameHistory(JSON.parse(saved));
     }
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [unsubscribe]);
 
   const saveToHistory = (game) => {
     const newHistory = [game, ...gameHistory].slice(0, 50);
@@ -94,8 +96,12 @@ const PokerSettleApp = () => {
   };
 
   const resetApp = () => {
+    if (unsubscribe) {
+      unsubscribe();
+    }
     setScreen('home');
     setGameCode('');
+    setGameId(null);
     setInputCode('');
     setPlayerName('');
     setVenmoUsername('');
@@ -103,6 +109,71 @@ const PokerSettleApp = () => {
     setCurrentPlayer(null);
     setBuyInInput('');
     setSettlements([]);
+    setUnsubscribe(null);
+  };
+
+  const createGameHandler = async () => {
+    if (!playerName.trim()) return;
+    
+    try {
+      const player = {
+        id: Date.now().toString(),
+        name: playerName,
+        venmoUsername,
+        isHost: true,
+        buyInsCents: [],
+        totalBuyInCents: 0,
+        finalChipsCents: null,
+        netResultCents: 0
+      };
+      
+      const gameData = {
+        hostId: player.id,
+        hostName: playerName,
+        players: [player],
+        status: 'lobby'
+      };
+      
+      const { gameId: newGameId, code } = await createGame(gameData);
+      
+      setGameId(newGameId);
+      setGameCode(code);
+      setCurrentPlayer(player);
+      setPlayers([player]);
+      setScreen('lobby');
+      
+      const unsub = subscribeToGame(newGameId, (gameData) => {
+        setPlayers(gameData.players || []);
+      });
+      setUnsubscribe(() => unsub);
+      
+    } catch (error) {
+      console.error('Error creating game:', error);
+      alert('Failed to create game. Please try again.');
+    }
+  };
+
+  const copyCode = () => {
+    navigator.clipboard.writeText(gameCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const shareCode = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: 'Join my poker game!',
+        text: `Join my poker game with code: ${gameCode}`,
+      });
+    } else {
+      copyCode();
+    }
+  };
+
+  const generateVenmoLink = (username, amountCents) => {
+    const cleanUsername = username?.replace('@', '') || '';
+    const amount = centsToDollars(amountCents);
+    return `venmo://paycharge?txn=pay&recipients=${cleanUsername}&amount=${amount}&note=Poker%20game%20settlement`;
   };
 
   if (screen === 'home') {
@@ -126,10 +197,10 @@ const PokerSettleApp = () => {
               <DollarSign size={40} className="text-amber-100" strokeWidth={3} />
             </div>
             <h1 className="text-5xl font-bold mb-2 tracking-tight" style={{textShadow: '2px 2px 4px rgba(0,0,0,0.5)'}}>
-              POKER SETTLE
+              CASHOUT
             </h1>
             <div className="inline-block bg-amber-500 text-green-900 px-4 py-1 rounded-full text-sm font-bold tracking-wide">
-              SPLIT TO THE PENNY
+              SETTLE YOUR POKER GAMES
             </div>
           </div>
 
@@ -156,7 +227,7 @@ const PokerSettleApp = () => {
 
           <div className="space-y-4 mb-6">
             <button
-              onClick={() => { setGameCode(generateGameCode()); setScreen('host'); }}
+              onClick={() => setScreen('host')}
               className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-5 px-6 rounded-xl flex items-center justify-center gap-3 transition shadow-lg border-2 border-amber-500/50"
             >
               <Users size={24} />
@@ -195,13 +266,7 @@ const PokerSettleApp = () => {
             <label className="block text-sm text-amber-300 mb-2 font-semibold">YOUR NAME</label>
             <input type="text" value={playerName} onChange={(e) => setPlayerName(e.target.value)} placeholder="Enter your name" className="w-full bg-green-900/50 text-white px-4 py-3 rounded-lg border border-amber-500/20" />
           </div>
-          <button onClick={() => { 
-            if (!playerName.trim()) return;
-            const player = { id: Date.now().toString(), name: playerName, venmoUsername, isHost: true, buyInsCents: [], totalBuyInCents: 0, finalChipsCents: null, netResultCents: 0 };
-            setCurrentPlayer(player);
-            setPlayers([player]);
-            setScreen('lobby');
-          }} disabled={!playerName.trim()} className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 disabled:from-gray-600 text-white font-bold py-4 rounded-xl mb-3 border-2 border-amber-500/50">CREATE GAME</button>
+          <button onClick={createGameHandler} disabled={!playerName.trim()} className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 disabled:from-gray-600 text-white font-bold py-4 rounded-xl mb-3 border-2 border-amber-500/50">CREATE GAME</button>
           <button onClick={resetApp} className="w-full bg-black/40 text-amber-300 border border-amber-500/30 py-3 rounded-lg">Back</button>
         </div>
       </div>
@@ -217,17 +282,44 @@ const PokerSettleApp = () => {
             <label className="block text-sm text-amber-300 mb-2 font-semibold">GAME CODE</label>
             <input type="text" value={inputCode} onChange={(e) => setInputCode(e.target.value.toUpperCase())} maxLength={6} className="w-full bg-green-900/50 text-white px-4 py-3 rounded-lg mb-4 text-center text-2xl font-mono border border-amber-500/20" />
             <label className="block text-sm text-amber-300 mb-2 font-semibold">YOUR NAME</label>
-            <input type="text" value={playerName} onChange={(e) => setPlayerName(e.target.value)} className="w-full bg-green-900/50 text-white px-4 py-3 rounded-lg mb-4 border border-amber-500/20" />
-            <label className="block text-sm text-amber-300 mb-2 font-semibold">VENMO (OPTIONAL)</label>
-            <input type="text" value={venmoUsername} onChange={(e) => setVenmoUsername(e.target.value)} className="w-full bg-green-900/50 text-white px-4 py-3 rounded-lg border border-amber-500/20" />
+            <input type="text" value={playerName} onChange={(e) => setPlayerName(e.target.value)} className="w-full bg-green-900/50 text-white px-4 py-3 rounded-lg border border-amber-500/20" />
           </div>
-          <button onClick={() => {
+          <button onClick={async () => {
             if (!playerName.trim() || !inputCode.trim()) return;
-            const player = { id: Date.now().toString(), name: playerName, venmoUsername, isHost: false, buyInsCents: [], totalBuyInCents: 0, finalChipsCents: null, netResultCents: 0 };
-            setCurrentPlayer(player);
-            setPlayers([...players, player]);
-            setGameCode(inputCode.toUpperCase());
-            setScreen('lobby');
+            
+            try {
+              const game = await getGameByCode(inputCode.toUpperCase());
+              
+              const player = {
+                id: Date.now().toString(),
+                name: playerName,
+                venmoUsername,
+                isHost: false,
+                buyInsCents: [],
+                totalBuyInCents: 0,
+                finalChipsCents: null,
+                netResultCents: 0
+              };
+              
+              const updatedPlayers = [...game.players, player];
+              
+              await updateGame(game.id, { players: updatedPlayers });
+              
+              setGameId(game.id);
+              setGameCode(game.code);
+              setCurrentPlayer(player);
+              setPlayers(updatedPlayers);
+              setScreen('lobby');
+              
+              const unsub = subscribeToGame(game.id, (gameData) => {
+                setPlayers(gameData.players || []);
+              });
+              setUnsubscribe(() => unsub);
+              
+            } catch (error) {
+              console.error('Error joining game:', error);
+              alert('Invalid game code or game not found!');
+            }
           }} disabled={!playerName.trim() || inputCode.length !== 6} className="w-full bg-gradient-to-r from-blue-600 to-blue-700 disabled:from-gray-600 text-white font-bold py-4 rounded-xl mb-3 border-2 border-amber-500/50">JOIN</button>
           <button onClick={resetApp} className="w-full bg-black/40 text-amber-300 border border-amber-500/30 py-3 rounded-lg">Back</button>
         </div>
@@ -245,10 +337,10 @@ const PokerSettleApp = () => {
               <div className="text-sm text-amber-300 mb-2">GAME CODE</div>
               <div className="text-5xl font-mono font-bold bg-green-900/50 py-4 rounded-lg mb-3">{gameCode}</div>
               <div className="flex gap-2">
-                <button onClick={() => { navigator.clipboard.writeText(gameCode); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className="flex-1 bg-green-800/50 border border-amber-500/30 py-2 rounded-lg text-amber-300">
+                <button onClick={copyCode} className="flex-1 bg-green-800/50 border border-amber-500/30 py-2 rounded-lg text-amber-300">
                   {copied ? <Check size={18} className="inline" /> : <Copy size={18} className="inline" />} {copied ? 'Copied!' : 'Copy'}
                 </button>
-                <button onClick={() => { if (navigator.share) navigator.share({ text: `Join: ${gameCode}` }); }} className="flex-1 bg-red-600 py-2 rounded-lg border border-amber-500/30"><Share2 size={18} className="inline" /> Share</button>
+                <button onClick={shareCode} className="flex-1 bg-red-600 py-2 rounded-lg border border-amber-500/30"><Share2 size={18} className="inline" /> Share</button>
               </div>
             </div>
           </div>
@@ -261,7 +353,15 @@ const PokerSettleApp = () => {
               </div>
             ))}
           </div>
-          {currentPlayer?.isHost && <button onClick={() => { if (players.length < 2) { alert('Need 2+ players'); return; } setScreen('game'); }} className="w-full bg-red-600 text-white font-bold py-4 rounded-xl mb-3 border-2 border-amber-500/50">START GAME</button>}
+          {currentPlayer?.isHost && (
+            <button onClick={async () => { 
+              if (players.length < 2) { alert('Need 2+ players'); return; }
+              if (gameId) {
+                await updateGame(gameId, { status: 'active' });
+              }
+              setScreen('game');
+            }} className="w-full bg-red-600 text-white font-bold py-4 rounded-xl mb-3 border-2 border-amber-500/50">START GAME</button>
+          )}
           <button onClick={resetApp} className="w-full bg-black/40 text-amber-300 border border-amber-500/30 py-3 rounded-lg">Leave</button>
         </div>
       </div>
@@ -270,6 +370,34 @@ const PokerSettleApp = () => {
 
   if (screen === 'game') {
     const totalPot = players.reduce((sum, p) => sum + p.totalBuyInCents, 0);
+    
+    const addBuyIn = async (playerId, amount) => {
+      const amountCents = typeof amount === 'number' ? amount * 100 : dollarsToCents(amount);
+      if (amountCents <= 0) return;
+      
+      const updatedPlayers = players.map(p => {
+        if (p.id === playerId) {
+          return {
+            ...p,
+            buyInsCents: [...p.buyInsCents, amountCents],
+            totalBuyInCents: p.totalBuyInCents + amountCents
+          };
+        }
+        return p;
+      });
+      
+      setPlayers(updatedPlayers);
+      setBuyInInput('');
+      
+      if (gameId) {
+        try {
+          await updateGame(gameId, { players: updatedPlayers });
+        } catch (error) {
+          console.error('Error updating buy-in:', error);
+        }
+      }
+    };
+    
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 text-white p-6">
         <div className="max-w-md mx-auto pt-8">
@@ -289,20 +417,12 @@ const PokerSettleApp = () => {
                   <div>
                     <div className="flex gap-2 mb-2">
                       {quickAmounts.map(amt => (
-                        <button key={amt} onClick={() => {
-                          setPlayers(players.map(p => p.id === player.id ? {...p, buyInsCents: [...p.buyInsCents, amt*100], totalBuyInCents: p.totalBuyInCents + amt*100} : p));
-                        }} className="bg-green-800/50 border border-amber-500/30 px-2 py-1 rounded text-xs text-amber-300">${amt}</button>
+                        <button key={amt} onClick={() => addBuyIn(player.id, amt)} className="bg-green-800/50 border border-amber-500/30 px-2 py-1 rounded text-xs text-amber-300">${amt}</button>
                       ))}
                     </div>
                     <div className="flex gap-2">
                       <input type="number" step="0.01" value={buyInInput} onChange={(e) => setBuyInInput(e.target.value)} className="flex-1 bg-green-900/50 text-white px-3 py-2 rounded-lg border border-amber-500/20" />
-                      <button onClick={() => { 
-                        const cents = dollarsToCents(buyInInput);
-                        if (cents > 0) {
-                          setPlayers(players.map(p => p.id === player.id ? {...p, buyInsCents: [...p.buyInsCents, cents], totalBuyInCents: p.totalBuyInCents + cents} : p));
-                          setBuyInInput('');
-                        }
-                      }} className="bg-red-600 px-4 py-2 rounded-lg border border-amber-500/30"><Plus size={18} /></button>
+                      <button onClick={() => addBuyIn(player.id, buyInInput)} className="bg-red-600 px-4 py-2 rounded-lg border border-amber-500/30"><Plus size={18} /></button>
                     </div>
                   </div>
                 )}
@@ -320,6 +440,48 @@ const PokerSettleApp = () => {
     const totalPot = players.reduce((sum, p) => sum + p.totalBuyInCents, 0);
     const totalChips = players.reduce((sum, p) => sum + (p.finalChipsCents || 0), 0);
     const balanced = Math.abs(totalPot - totalChips) <= 1;
+    
+    const calculateSettlement = async () => {
+      if (!balanced || players.some(p => p.finalChipsCents === null)) {
+        alert('Fix amounts first');
+        return;
+      }
+      
+      const updatedPlayers = players.map(p => ({
+        ...p,
+        netResultCents: (p.finalChipsCents || 0) - p.totalBuyInCents
+      }));
+
+      setPlayers(updatedPlayers);
+      const transactions = optimizeSettlement(updatedPlayers);
+      setSettlements(transactions);
+
+      saveToHistory({
+        date: new Date().toISOString(),
+        code: gameCode,
+        players: updatedPlayers.map(p => ({
+          name: p.name,
+          buyIn: centsToDollars(p.totalBuyInCents),
+          result: centsToDollars(p.netResultCents)
+        })),
+        myResult: currentPlayer ? centsToDollars(updatedPlayers.find(p => p.id === currentPlayer.id)?.netResultCents || 0) : null
+      });
+
+      if (gameId) {
+        try {
+          await updateGame(gameId, {
+            players: updatedPlayers,
+            settlements: transactions,
+            status: 'completed'
+          });
+        } catch (error) {
+          console.error('Error saving settlement:', error);
+        }
+      }
+
+      setScreen('settlement');
+    };
+    
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 text-white p-6">
         <div className="max-w-md mx-auto pt-8">
@@ -340,14 +502,7 @@ const PokerSettleApp = () => {
               </div>
             ))}
           </div>
-          <button onClick={() => {
-            if (!balanced || players.some(p => p.finalChipsCents === null)) { alert('Fix amounts first'); return; }
-            const updated = players.map(p => ({...p, netResultCents: (p.finalChipsCents || 0) - p.totalBuyInCents}));
-            setPlayers(updated);
-            setSettlements(optimizeSettlement(updated));
-            saveToHistory({ date: new Date().toISOString(), code: gameCode, players: updated.map(p => ({ name: p.name, buyIn: centsToDollars(p.totalBuyInCents), result: centsToDollars(p.netResultCents) })), myResult: currentPlayer ? centsToDollars(updated.find(p => p.id === currentPlayer.id)?.netResultCents || 0) : null });
-            setScreen('settlement');
-          }} disabled={!balanced} className="w-full bg-red-600 disabled:bg-gray-600 text-white font-bold py-4 rounded-xl mb-3 border-2 border-amber-500/50">CALCULATE</button>
+          <button onClick={calculateSettlement} disabled={!balanced} className="w-full bg-red-600 disabled:bg-gray-600 text-white font-bold py-4 rounded-xl mb-3 border-2 border-amber-500/50">CALCULATE</button>
           <button onClick={() => setScreen('game')} className="w-full bg-black/40 text-amber-300 border border-amber-500/30 py-3 rounded-lg">Back</button>
         </div>
       </div>
@@ -382,111 +537,112 @@ const PokerSettleApp = () => {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-2xl font-bold text-emerald-300">${centsToDollars(txn.amountCents)}</span>
-                    {txn.toVenmo && <a href={`venmo://paycharge?txn=pay&recipients=${txn.toVenmo.replace('@','')}&amount=${centsToDollars(txn.amountCents)}`} className="bg-blue-600 px-4 py-2 rounded-lg text-sm font-bold border border-amber-500/30">Venmo</a>}
-                  </div>
-                </div>
-              ))}
+                    {txn.toVenmo && <a href={generateVenmoLink(txn.toVenmo, txn.amountCents)} className="bg-blue-600 px-4 py-2 rounded-lg text-sm font-bold border border-amber-500/30">Venmo
+                    </a>}
+              </div>
             </div>
-          )}
-          <button onClick={resetApp} className="w-full bg-red-600 text-white font-bold py-4 rounded-xl border-2 border-amber-500/50">DONE</button>
+          ))}
         </div>
-      </div>
-    );
-  }
+      )}
+      <button onClick={resetApp} className="w-full bg-red-600 text-white font-bold py-4 rounded-xl border-2 border-amber-500/50">DONE</button>
+    </div>
+  </div>
+);
+}
 
-  if (screen === 'history') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 text-white p-6">
-        <div className="max-w-md mx-auto pt-8">
-          <h2 className="text-3xl font-bold mb-6 text-amber-400">HISTORY</h2>
-          {gameHistory.length === 0 ? (
-            <div className="text-center py-12 bg-black/40 rounded-xl border-2 border-amber-500/30"><History size={48} className="mx-auto mb-4 text-amber-400/50" /><p className="text-amber-200/70">No games yet</p></div>
-          ) : (
-            <div className="space-y-3 mb-6">
-              {gameHistory.map((g, i) => (
-                <div key={i} className="bg-black/40 rounded-xl p-4 border-2 border-amber-500/30">
-                  <div className="flex justify-between mb-2">
-                    <div><div className="font-semibold">{new Date(g.date).toLocaleDateString()}</div><div className="text-sm text-amber-300">{g.players.length} players</div></div>
-                    {g.myResult && <div className={`text-xl font-bold ${parseFloat(g.myResult) > 0 ? 'text-emerald-300' : 'text-red-400'}`}>{parseFloat(g.myResult) > 0 ? '+' : ''}${g.myResult}</div>}
-                  </div>
-                  <div className="text-xs text-amber-500/60 font-mono">Code: {g.code}</div>
+if (screen === 'history') {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 text-white p-6">
+      <div className="max-w-md mx-auto pt-8">
+        <h2 className="text-3xl font-bold mb-6 text-amber-400">HISTORY</h2>
+        {gameHistory.length === 0 ? (
+          <div className="text-center py-12 bg-black/40 rounded-xl border-2 border-amber-500/30"><History size={48} className="mx-auto mb-4 text-amber-400/50" /><p className="text-amber-200/70">No games yet</p></div>
+        ) : (
+          <div className="space-y-3 mb-6">
+            {gameHistory.map((g, i) => (
+              <div key={i} className="bg-black/40 rounded-xl p-4 border-2 border-amber-500/30">
+                <div className="flex justify-between mb-2">
+                  <div><div className="font-semibold">{new Date(g.date).toLocaleDateString()}</div><div className="text-sm text-amber-300">{g.players.length} players</div></div>
+                  {g.myResult && <div className={`text-xl font-bold ${parseFloat(g.myResult) > 0 ? 'text-emerald-300' : 'text-red-400'}`}>{parseFloat(g.myResult) > 0 ? '+' : ''}${g.myResult}</div>}
                 </div>
-              ))}
-            </div>
-          )}
-          <button onClick={() => setScreen('home')} className="w-full bg-black/40 text-amber-300 border border-amber-500/30 py-3 rounded-lg">Back</button>
-        </div>
+                <div className="text-xs text-amber-500/60 font-mono">Code: {g.code}</div>
+              </div>
+            ))}
+          </div>
+        )}
+        <button onClick={() => setScreen('home')} className="w-full bg-black/40 text-amber-300 border border-amber-500/30 py-3 rounded-lg">Back</button>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
-  if (screen === 'stats') {
-    const stats = calculateStats();
-    const myGames = gameHistory.filter(g => g.myResult !== null);
-    const wins = myGames.filter(g => parseFloat(g.myResult) > 0);
-    const losses = myGames.filter(g => parseFloat(g.myResult) < 0);
-    
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 text-white p-6">
-        <div className="max-w-md mx-auto pt-8">
-          <h2 className="text-3xl font-bold mb-6 text-amber-400">YOUR STATS</h2>
-          {myGames.length === 0 ? (
-            <div className="text-center py-12 bg-black/40 rounded-xl border-2 border-amber-500/30"><TrendingUp size={48} className="mx-auto mb-4 text-amber-400/50" /><p className="text-amber-200/70">Play to see stats!</p></div>
-          ) : (
-            <>
-              <div className="bg-black/40 rounded-xl p-6 mb-6 border-2 border-amber-500/30">
-                <div className="text-center mb-6">
-                  <div className="text-sm text-amber-300 mb-1">NET PROFIT/LOSS</div>
-                  <div className={`text-5xl font-bold ${parseFloat(stats.totalResult) > 0 ? 'text-emerald-300' : parseFloat(stats.totalResult) < 0 ? 'text-red-400' : 'text-amber-300'}`}>
-                    {parseFloat(stats.totalResult) > 0 ? '+' : ''}${stats.totalResult}
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div className="bg-green-800/50 rounded-lg p-3 border border-amber-500/20">
-                    <div className="text-2xl font-bold text-amber-400">{stats.totalGames}</div>
-                    <div className="text-xs text-amber-200/70">GAMES</div>
-                  </div>
-                  <div className="bg-green-800/50 rounded-lg p-3 border border-amber-500/20">
-                    <div className="text-2xl font-bold text-emerald-300">{wins.length}</div>
-                    <div className="text-xs text-amber-200/70">WINS</div>
-                  </div>
-                  <div className="bg-green-800/50 rounded-lg p-3 border border-amber-500/20">
-                    <div className="text-2xl font-bold text-red-400">{losses.length}</div>
-                    <div className="text-xs text-amber-200/70">LOSSES</div>
-                  </div>
+if (screen === 'stats') {
+  const stats = calculateStats();
+  const myGames = gameHistory.filter(g => g.myResult !== null);
+  const wins = myGames.filter(g => parseFloat(g.myResult) > 0);
+  const losses = myGames.filter(g => parseFloat(g.myResult) < 0);
+  
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 text-white p-6">
+      <div className="max-w-md mx-auto pt-8">
+        <h2 className="text-3xl font-bold mb-6 text-amber-400">YOUR STATS</h2>
+        {myGames.length === 0 ? (
+          <div className="text-center py-12 bg-black/40 rounded-xl border-2 border-amber-500/30"><TrendingUp size={48} className="mx-auto mb-4 text-amber-400/50" /><p className="text-amber-200/70">Play to see stats!</p></div>
+        ) : (
+          <>
+            <div className="bg-black/40 rounded-xl p-6 mb-6 border-2 border-amber-500/30">
+              <div className="text-center mb-6">
+                <div className="text-sm text-amber-300 mb-1">NET PROFIT/LOSS</div>
+                <div className={`text-5xl font-bold ${parseFloat(stats.totalResult) > 0 ? 'text-emerald-300' : parseFloat(stats.totalResult) < 0 ? 'text-red-400' : 'text-amber-300'}`}>
+                  {parseFloat(stats.totalResult) > 0 ? '+' : ''}${stats.totalResult}
                 </div>
               </div>
-              <div className="bg-black/40 rounded-xl p-6 mb-6 border-2 border-amber-500/30">
-                <div className="space-y-3">
-                  <div className="flex justify-between bg-green-800/30 p-3 rounded-lg border border-amber-500/20">
-                    <span className="text-amber-300">Win Rate</span>
-                    <span className="font-bold text-amber-400">{stats.winRate}%</span>
-                  </div>
-                  <div className="flex justify-between bg-green-800/30 p-3 rounded-lg border border-amber-500/20">
-                    <span className="text-amber-300">Biggest Win</span>
-                    <span className="font-bold text-emerald-300">+${wins.length > 0 ? Math.max(...wins.map(g => parseFloat(g.myResult))).toFixed(2) : '0.00'}</span>
-                  </div>
-                  <div className="flex justify-between bg-green-800/30 p-3 rounded-lg border border-amber-500/20">
-                    <span className="text-amber-300">Biggest Loss</span>
-                    <span className="font-bold text-red-400">${losses.length > 0 ? Math.min(...losses.map(g => parseFloat(g.myResult))).toFixed(2) : '0.00'}</span>
-                  </div>
-                  <div className="flex justify-between bg-green-800/30 p-3 rounded-lg border border-amber-500/20">
-                    <span className="text-amber-300">Average</span>
-                    <span className={`font-bold ${parseFloat(stats.totalResult) / stats.totalGames > 0 ? 'text-emerald-300' : 'text-red-400'}`}>
-                      {(parseFloat(stats.totalResult) / stats.totalGames > 0 ? '+' : '')}${(parseFloat(stats.totalResult) / stats.totalGames).toFixed(2)}
-                    </span>
-                  </div>
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div className="bg-green-800/50 rounded-lg p-3 border border-amber-500/20">
+                  <div className="text-2xl font-bold text-amber-400">{stats.totalGames}</div>
+                  <div className="text-xs text-amber-200/70">GAMES</div>
+                </div>
+                <div className="bg-green-800/50 rounded-lg p-3 border border-amber-500/20">
+                  <div className="text-2xl font-bold text-emerald-300">{wins.length}</div>
+                  <div className="text-xs text-amber-200/70">WINS</div>
+                </div>
+                <div className="bg-green-800/50 rounded-lg p-3 border border-amber-500/20">
+                  <div className="text-2xl font-bold text-red-400">{losses.length}</div>
+                  <div className="text-xs text-amber-200/70">LOSSES</div>
                 </div>
               </div>
-            </>
-          )}
-          <button onClick={() => setScreen('home')} className="w-full bg-black/40 text-amber-300 border border-amber-500/30 py-3 rounded-lg">Back</button>
-        </div>
+            </div>
+            <div className="bg-black/40 rounded-xl p-6 mb-6 border-2 border-amber-500/30">
+              <div className="space-y-3">
+                <div className="flex justify-between bg-green-800/30 p-3 rounded-lg border border-amber-500/20">
+                  <span className="text-amber-300">Win Rate</span>
+                  <span className="font-bold text-amber-400">{stats.winRate}%</span>
+                </div>
+                <div className="flex justify-between bg-green-800/30 p-3 rounded-lg border border-amber-500/20">
+                  <span className="text-amber-300">Biggest Win</span>
+                  <span className="font-bold text-emerald-300">+${wins.length > 0 ? Math.max(...wins.map(g => parseFloat(g.myResult))).toFixed(2) : '0.00'}</span>
+                </div>
+                <div className="flex justify-between bg-green-800/30 p-3 rounded-lg border border-amber-500/20">
+                  <span className="text-amber-300">Biggest Loss</span>
+                  <span className="font-bold text-red-400">${losses.length > 0 ? Math.min(...losses.map(g => parseFloat(g.myResult))).toFixed(2) : '0.00'}</span>
+                </div>
+                <div className="flex justify-between bg-green-800/30 p-3 rounded-lg border border-amber-500/20">
+                  <span className="text-amber-300">Average</span>
+                  <span className={`font-bold ${parseFloat(stats.totalResult) / stats.totalGames > 0 ? 'text-emerald-300' : 'text-red-400'}`}>
+                    {(parseFloat(stats.totalResult) / stats.totalGames > 0 ? '+' : '')}${(parseFloat(stats.totalResult) / stats.totalGames).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+        <button onClick={() => setScreen('home')} className="w-full bg-black/40 text-amber-300 border border-amber-500/30 py-3 rounded-lg">Back</button>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
-  return null;
+return null;
 };
 
 export default PokerSettleApp;
