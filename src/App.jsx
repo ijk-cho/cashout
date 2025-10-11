@@ -88,8 +88,9 @@ const PokerSettleApp = () => {
         setUser(firebaseUser);
         setShowAuth(false);
       } else {
-        setUser(undefined); // Show auth screen
+        // No user signed in, show auth screen
         setShowAuth(true);
+        setUser(null);
       }
     });
     
@@ -256,6 +257,7 @@ const deleteGroup = (groupId) => {
     return `venmo://paycharge?txn=pay&recipients=${cleanUsername}&amount=${amount}&note=Poker%20game%20settlement`;
   };
 
+// Show loading while checking auth
 // Show loading while checking auth
   if (user === undefined && showAuth) {
     return (
