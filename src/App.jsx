@@ -72,7 +72,7 @@ const PokerSettleApp = () => {
   const [copied, setCopied] = useState(false);
   const [unsubscribe, setUnsubscribe] = useState(null);
   const [user, setUser] = useState(undefined); // undefined = loading, null = guest, object = signed in
-  const [showAuth, setShowAuth] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
   const quickAmounts = [5, 10, 20, 50, 100];
 
   useEffect(() => {
@@ -84,14 +84,8 @@ const PokerSettleApp = () => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
-        setUser(firebaseUser);
-        setShowAuth(false);
-      } else {
-        // No user signed in, show auth screen
-        setShowAuth(true);
-        setUser(null);
-      }
+      setUser(firebaseUser); // Will be object if signed in, null if not
+      setAuthChecked(true);
     });
     
     return () => unsubscribe();
@@ -113,7 +107,7 @@ const PokerSettleApp = () => {
   }, [unsubscribe]);
 
   const saveToHistory = (game) => {
-    if (!user) {
+    if (user === 'guest' || !user) {
       // Guest mode - don't save
       return;
     }
@@ -257,9 +251,8 @@ const deleteGroup = (groupId) => {
     return `venmo://paycharge?txn=pay&recipients=${cleanUsername}&amount=${amount}&note=Poker%20game%20settlement`;
   };
 
-// Show loading while checking auth
-// Show loading while checking auth
-  if (user === undefined && showAuth) {
+  // Show loading while checking auth
+  if (!authChecked) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 text-white flex items-center justify-center">
         <div className="text-2xl font-bold text-amber-400">Loading...</div>
@@ -267,15 +260,10 @@ const deleteGroup = (groupId) => {
     );
   }
 
-  // Show auth screen if not signed in
-  if (showAuth && user === undefined) {
+  // Show auth screen if user is null (not signed in) and hasn't chosen guest mode
+  if (user === null && user !== undefined) {
     return <Auth onAuthSuccess={(firebaseUser) => {
-      if (firebaseUser) {
-        setUser(firebaseUser);
-      } else {
-        setUser(null); // Guest mode
-      }
-      setShowAuth(false);
+      setUser(firebaseUser || 'guest'); // 'guest' = guest mode
     }} />;
   }
 
@@ -291,7 +279,7 @@ const deleteGroup = (groupId) => {
         <div className="absolute bottom-20 left-10 text-8xl opacity-5">♥</div>
         
         <div className="max-w-md mx-auto relative z-10">
-        {user && user.email && (
+        {user && user !== 'guest' && user.email && (
           <div className="text-right mb-4">
             <button
               onClick={() => {
@@ -309,14 +297,11 @@ const deleteGroup = (groupId) => {
             </button>
           </div>
         )}
-        {user === null && (
+        {user === 'guest' && (
           <div className="bg-amber-500/20 border border-amber-500 rounded-lg p-3 mb-4 text-center">
             <p className="text-amber-200 text-sm font-semibold">⚠️ Guest Mode - History not saved</p>
             <button
-              onClick={() => {
-                setUser(undefined);
-                setShowAuth(true);
-              }}
+              onClick={() => setUser(null)}
               className="text-amber-400 text-xs underline mt-1"
             >
               Sign in to save history
