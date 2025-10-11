@@ -313,7 +313,10 @@ const deleteGroup = (groupId) => {
           <div className="bg-amber-500/20 border border-amber-500 rounded-lg p-3 mb-4 text-center">
             <p className="text-amber-200 text-sm font-semibold">⚠️ Guest Mode - History not saved</p>
             <button
-              onClick={() => setShowAuth(true)}
+              onClick={() => {
+                setUser(undefined);
+                setShowAuth(true);
+              }}
               className="text-amber-400 text-xs underline mt-1"
             >
               Sign in to save history
