@@ -1036,13 +1036,27 @@ const updateQuickAmount = (index, value) => {
                   ) : (
                     <input
                       type="tel"
-                      value={player.finalChipsCents !== null ? centsToDollars(player.finalChipsCents) : ''}
+                      value={player.inputValue !== undefined ? player.inputValue : (player.finalChipsCents !== null ? centsToDollars(player.finalChipsCents) : '')}
                       onChange={(e) => {
                         const value = e.target.value;
-                        // Allow empty, numbers, and decimal point
-                        if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
+                        // Allow empty, numbers, and one decimal point
+                        if (value === '' || /^\d*\.?\d*$/.test(value)) {
                           const updatedPlayers = players.map(p =>
-                            p.id === player.id ? { ...p, finalChipsCents: value === '' ? null : dollarsToCents(value) } : p
+                            p.id === player.id ? { 
+                              ...p, 
+                              inputValue: value,
+                              finalChipsCents: value === '' ? null : dollarsToCents(value)
+                            } : p
+                          );
+                          setPlayers(updatedPlayers);
+                        }
+                      }}
+                      onBlur={(e) => {
+                        // Clean up the display value on blur
+                        const value = e.target.value;
+                        if (value && !value.includes('.')) {
+                          const updatedPlayers = players.map(p =>
+                            p.id === player.id ? { ...p, inputValue: undefined } : p
                           );
                           setPlayers(updatedPlayers);
                         }
