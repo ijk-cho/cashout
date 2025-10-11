@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { auth } from './firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import Auth from './Auth';
 import { DollarSign, Users, Plus, Share2, Copy, Check, TrendingUp, History, ArrowRight } from 'lucide-react';
 import { createGame, getGameByCode, updateGame, subscribeToGame, removePlayer, updatePaymentStatus } from './gameService';
 
@@ -68,6 +71,8 @@ const PokerSettleApp = () => {
   const [gameHistory, setGameHistory] = useState([]);
   const [copied, setCopied] = useState(false);
   const [unsubscribe, setUnsubscribe] = useState(null);
+  const [user, setUser] = useState(undefined); // undefined = loading, null = guest, object = signed in
+  const [showAuth, setShowAuth] = useState(false);
   const quickAmounts = [5, 10, 20, 50, 100];
 
   useEffect(() => {
@@ -75,6 +80,20 @@ const PokerSettleApp = () => {
     if (saved) {
       setGameHistory(JSON.parse(saved));
     }
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        setUser(firebaseUser);
+        setShowAuth(false);
+      } else {
+        setUser(undefined); // Show auth screen
+        setShowAuth(true);
+      }
+    });
+    
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -93,6 +112,10 @@ const PokerSettleApp = () => {
   }, [unsubscribe]);
 
   const saveToHistory = (game) => {
+    if (!user) {
+      // Guest mode - don't save
+      return;
+    }
     const newHistory = [game, ...gameHistory].slice(0, 50);
     setGameHistory(newHistory);
     localStorage.setItem('pokerGameHistory', JSON.stringify(newHistory));
@@ -233,6 +256,27 @@ const deleteGroup = (groupId) => {
     return `venmo://paycharge?txn=pay&recipients=${cleanUsername}&amount=${amount}&note=Poker%20game%20settlement`;
   };
 
+// Show loading while checking auth
+  if (user === undefined && showAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 text-white flex items-center justify-center">
+        <div className="text-2xl font-bold text-amber-400">Loading...</div>
+      </div>
+    );
+  }
+
+  // Show auth screen if not signed in
+  if (showAuth && user === undefined) {
+    return <Auth onAuthSuccess={(firebaseUser) => {
+      if (firebaseUser) {
+        setUser(firebaseUser);
+      } else {
+        setUser(null); // Guest mode
+      }
+      setShowAuth(false);
+    }} />;
+  }
+
   if (screen === 'home') {
     const stats = calculateStats();
     return (
@@ -245,6 +289,35 @@ const deleteGroup = (groupId) => {
         <div className="absolute bottom-20 left-10 text-8xl opacity-5">♥</div>
         
         <div className="max-w-md mx-auto relative z-10">
+        {user && user.email && (
+          <div className="text-right mb-4">
+            <button
+              onClick={() => {
+                if (window.confirm('Sign out?')) {
+                  auth.signOut();
+                  setUser(undefined);
+                  setGameHistory([]);
+                  setSavedGroups([]);
+                  setShowAuth(true);
+                }
+              }}
+              className="bg-black/40 backdrop-blur-sm text-amber-300 border border-amber-500/30 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-black/60"
+            >
+              Sign Out ({user.email})
+            </button>
+          </div>
+        )}
+        {user === null && (
+          <div className="bg-amber-500/20 border border-amber-500 rounded-lg p-3 mb-4 text-center">
+            <p className="text-amber-200 text-sm font-semibold">⚠️ Guest Mode - History not saved</p>
+            <button
+              onClick={() => setShowAuth(true)}
+              className="text-amber-400 text-xs underline mt-1"
+            >
+              Sign in to save history
+            </button>
+          </div>
+        )}
           <div className="text-center mb-8 pt-8">
             <div className="inline-flex items-center justify-center w-24 h-24 rounded-full mb-4"
                  style={{
@@ -333,7 +406,7 @@ const deleteGroup = (groupId) => {
               type="text" 
               value={sessionName} 
               onChange={(e) => setSessionName(e.target.value)} 
-              placeholder="e.g., Sunday Runs with the In-Laws" 
+              placeholder="e.g., Sunday Runs with the Boys" 
               className="w-full bg-green-900/50 text-white px-4 py-3 rounded-lg mb-4 border border-amber-500/20" 
             />
             <label className="block text-sm text-amber-300 mb-2 font-semibold">YOUR NAME</label>
