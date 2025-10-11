@@ -68,6 +68,7 @@ const PokerSettleApp = () => {
   const [savedGroups, setSavedGroups] = useState([]);
   const [showGroupSelector, setShowGroupSelector] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [gameHistory, setGameHistory] = useState([]);
   const [copied, setCopied] = useState(false);
   const [unsubscribe, setUnsubscribe] = useState(null);
@@ -105,6 +106,12 @@ const PokerSettleApp = () => {
       }
     };
   }, [unsubscribe]);
+
+  useEffect(() => {
+    if (screen !== 'home') {
+      setShowProfileMenu(false);
+    }
+  }, [screen]);
 
   const saveToHistory = (game) => {
     if (user === 'guest' || !user) {
@@ -280,21 +287,83 @@ const deleteGroup = (groupId) => {
         
         <div className="max-w-md mx-auto relative z-10">
         {user && user !== 'guest' && user.email && (
-          <div className="text-right mb-4">
+          <div className="text-right mb-4 relative">
             <button
-              onClick={() => {
-                if (window.confirm('Sign out?')) {
-                  auth.signOut();
-                  setUser(undefined);
-                  setGameHistory([]);
-                  setSavedGroups([]);
-                  setShowAuth(true);
-                }
-              }}
-              className="bg-black/40 backdrop-blur-sm text-amber-300 border border-amber-500/30 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-black/60"
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
+              className="w-10 h-10 bg-gradient-to-br from-red-600 to-red-700 rounded-full flex items-center justify-center font-bold text-white border-2 border-amber-500/50 hover:from-red-700 hover:to-red-800 transition"
             >
-              Sign Out ({user.email})
+              {user.displayName ? user.displayName[0].toUpperCase() : user.email[0].toUpperCase()}
             </button>
+            
+            {showProfileMenu && (
+              <>
+                <div 
+                  className="fixed inset-0 z-10" 
+                  onClick={() => setShowProfileMenu(false)}
+                ></div>
+                
+                <div className="absolute right-0 mt-2 w-64 bg-slate-800 rounded-xl shadow-2xl border-2 border-amber-500/30 overflow-hidden z-20">
+                  <div className="bg-gradient-to-r from-red-600 to-red-700 p-4 text-center">
+                    <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center font-bold text-2xl text-slate-900 mx-auto mb-2 border-4 border-amber-200">
+                      {user.displayName ? user.displayName[0].toUpperCase() : user.email[0].toUpperCase()}
+                    </div>
+                    <div className="font-bold text-white">{user.displayName || 'Player'}</div>
+                    <div className="text-xs text-amber-100">{user.email}</div>
+                  </div>
+                  
+                  <div className="p-2">
+                    <button
+                      onClick={() => {
+                        setShowProfileMenu(false);
+                        // TODO: Navigate to profile
+                        alert('Profile page coming soon!');
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-amber-500/20 rounded-lg transition text-left text-amber-200"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      Your Profile
+                    </button>
+                    
+                    <button
+                      onClick={() => {
+                        setShowProfileMenu(false);
+                        // TODO: Navigate to settings
+                        alert('Settings page coming soon!');
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-amber-500/20 rounded-lg transition text-left text-amber-200"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      Settings
+                    </button>
+                    
+                    <div className="border-t border-amber-500/30 my-2"></div>
+                    
+                    <button
+                      onClick={() => {
+                        if (window.confirm('Sign out?')) {
+                          auth.signOut();
+                          setUser(undefined);
+                          setGameHistory([]);
+                          setSavedGroups([]);
+                          setShowProfileMenu(false);
+                        }
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-500/20 rounded-lg transition text-left text-red-400"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
         {user === 'guest' && (
