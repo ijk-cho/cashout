@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { auth } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import Auth from './Auth';
+import ProfilePage from './ProfilePage';
 import { DollarSign, Users, Plus, Share2, Copy, Check, TrendingUp, History, ArrowRight } from 'lucide-react';
 import { createGame, getGameByCode, updateGame, subscribeToGame, removePlayer, updatePaymentStatus } from './gameService';
 
@@ -272,6 +273,25 @@ const deleteGroup = (groupId) => {
     return <Auth onAuthSuccess={(firebaseUser) => {
       setUser(firebaseUser || 'guest'); // 'guest' = guest mode
     }} />;
+  }
+
+  // Profile Screen
+  if (screen === 'profile') {
+    return (
+      <ProfilePage 
+        user={user}
+        gameHistory={gameHistory}
+        onUpdateProfile={async (updates) => {
+          // Update Firebase user profile
+          if (updates.displayName) {
+            await import('firebase/auth').then(({ updateProfile }) => {
+              updateProfile(auth.currentUser, { displayName: updates.displayName });
+            });
+          }
+        }}
+        onBack={() => setScreen('home')}
+      />
+    );
   }
 
   if (screen === 'home') {
