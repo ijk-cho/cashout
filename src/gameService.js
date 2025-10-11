@@ -110,4 +110,19 @@ export const removePlayer = async (gameId, playerId, players) => {
   const updatedPlayers = players.filter(p => p.id !== playerId);
   await updateGame(gameId, { players: updatedPlayers });
   return updatedPlayers;
+
+
+};
+
+// Update payment status
+export const updatePaymentStatus = async (gameId, settlementIndex, paid) => {
+  const gameDoc = await getDoc(doc(db, 'games', gameId));
+  if (gameDoc.exists()) {
+    const gameData = gameDoc.data();
+    const updatedSettlements = gameData.settlements.map((s, idx) => 
+      idx === settlementIndex ? { ...s, paid } : s
+    );
+    await updateGame(gameId, { settlements: updatedSettlements });
+    return updatedSettlements;
+  }
 };

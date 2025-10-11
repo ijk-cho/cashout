@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { DollarSign, Users, Plus, Share2, Copy, Check, TrendingUp, History, ArrowRight } from 'lucide-react';
-import { createGame, getGameByCode, updateGame, subscribeToGame, removePlayer } from './gameService';
+import { createGame, getGameByCode, updateGame, subscribeToGame, removePlayer, updatePaymentStatus } from './gameService';
 
 const dollarsToCents = (dollarString) => {
   const cleaned = dollarString.replace(/[$\s,]/g, '');
@@ -61,6 +61,10 @@ const PokerSettleApp = () => {
   const [buyInInput, setBuyInInput] = useState('');
   const [settlements, setSettlements] = useState([]);
   const [gameNotes, setGameNotes] = useState('');
+  const [sessionName, setSessionName] = useState('');
+  const [savedGroups, setSavedGroups] = useState([]);
+  const [showGroupSelector, setShowGroupSelector] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
   const [gameHistory, setGameHistory] = useState([]);
   const [copied, setCopied] = useState(false);
   const [unsubscribe, setUnsubscribe] = useState(null);
@@ -73,6 +77,13 @@ const PokerSettleApp = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const saved = localStorage.getItem('pokerGameGroups');
+    if (saved) {
+      setSavedGroups(JSON.parse(saved));
+    }
+  }, []);
+  
   useEffect(() => {
     return () => {
       if (unsubscribe) {
@@ -96,6 +107,47 @@ const PokerSettleApp = () => {
     return { totalGames, totalResult: totalResult.toFixed(2), winRate };
   };
 
+const saveGroup = () => {
+  if (!newGroupName.trim() || players.length < 2) return;
+  
+  const group = {
+    id: Date.now().toString(),
+    name: newGroupName,
+    players: players.map(p => ({ name: p.name, venmoUsername: p.venmoUsername }))
+  };
+  
+  const updated = [...savedGroups, group];
+  setSavedGroups(updated);
+  localStorage.setItem('pokerGameGroups', JSON.stringify(updated));
+  setNewGroupName('');
+  alert('Group saved!');
+};
+
+const loadGroup = (group) => {
+  const loadedPlayers = group.players.map((p, idx) => ({
+    id: `${Date.now()}-${idx}`,
+    name: p.name,
+    venmoUsername: p.venmoUsername || '',
+    isHost: idx === 0,
+    buyInsCents: [],
+    totalBuyInCents: 0,
+    finalChipsCents: null,
+    netResultCents: 0
+  }));
+  
+  setPlayers(loadedPlayers);
+  setCurrentPlayer(loadedPlayers[0]);
+  setPlayerName(loadedPlayers[0].name);
+  setShowGroupSelector(false);
+};
+
+const deleteGroup = (groupId) => {
+  if (!window.confirm('Delete this group?')) return;
+  const updated = savedGroups.filter(g => g.id !== groupId);
+  setSavedGroups(updated);
+  localStorage.setItem('pokerGameGroups', JSON.stringify(updated));
+};
+
   const resetApp = () => {
     if (unsubscribe) {
       unsubscribe();
@@ -112,6 +164,8 @@ const PokerSettleApp = () => {
     setSettlements([]);
     setUnsubscribe(null);
     setGameNotes('');
+    setSessionName('');
+
   };
 
   const createGameHandler = async () => {
@@ -132,6 +186,7 @@ const PokerSettleApp = () => {
       const gameData = {
         hostId: player.id,
         hostName: playerName,
+        sessionName: sessionName || null,
         players: [player],
         status: 'lobby'
       };
@@ -243,7 +298,15 @@ const PokerSettleApp = () => {
               <span className="text-lg tracking-wide">JOIN GAME</span>
             </button>
           </div>
-
+          {savedGroups.length > 0 && (
+            <button
+              onClick={() => { setScreen('groups'); }}
+              className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition shadow-lg border-2 border-amber-500/50 mb-4"
+            >
+              <Users size={24} />
+              <span className="text-lg tracking-wide">LOAD SAVED GROUP</span>
+            </button>
+          )}
           <div className="grid grid-cols-2 gap-3">
             <button onClick={() => setScreen('history')} className="bg-black/40 backdrop-blur-sm hover:bg-black/60 text-amber-300 border border-amber-500/30 py-4 px-4 rounded-lg flex items-center justify-center gap-2 transition font-semibold">
               <History size={20} />
@@ -265,6 +328,14 @@ const PokerSettleApp = () => {
         <div className="max-w-md mx-auto pt-8">
           <h2 className="text-3xl font-bold mb-6 text-amber-400">HOST GAME</h2>
           <div className="bg-black/40 backdrop-blur-sm rounded-xl p-6 mb-6 border-2 border-amber-500/30">
+            <label className="block text-sm text-amber-300 mb-2 font-semibold">SESSION NAME (OPTIONAL)</label>
+            <input 
+              type="text" 
+              value={sessionName} 
+              onChange={(e) => setSessionName(e.target.value)} 
+              placeholder="e.g., Sunday Runs with the In-Laws" 
+              className="w-full bg-green-900/50 text-white px-4 py-3 rounded-lg mb-4 border border-amber-500/20" 
+            />
             <label className="block text-sm text-amber-300 mb-2 font-semibold">YOUR NAME</label>
             <input type="text" value={playerName} onChange={(e) => setPlayerName(e.target.value)} placeholder="Enter your name" className="w-full bg-green-900/50 text-white px-4 py-3 rounded-lg border border-amber-500/20" />
           </div>
@@ -333,7 +404,9 @@ const PokerSettleApp = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 text-white p-6">
         <div className="max-w-md mx-auto pt-8">
-          <h2 className="text-3xl font-bold mb-6 text-amber-400">LOBBY</h2>
+          <h2 className="text-3xl font-bold mb-2 text-amber-400">LOBBY</h2>
+          {sessionName && <p className="text-amber-200/70 mb-4 text-lg italic">"{sessionName}"</p>}
+          {!sessionName && <div className="mb-4"></div>}
           <div className="bg-black/40 rounded-xl p-6 mb-6 border-2 border-amber-500/30">
             <div className="text-center mb-4">
               <div className="text-sm text-amber-300 mb-2">GAME CODE</div>
@@ -376,6 +449,26 @@ const PokerSettleApp = () => {
               </div>
             ))}
           </div>
+          {currentPlayer?.isHost && players.length >= 2 && !showGroupSelector && (
+            <div className="bg-black/40 rounded-xl p-4 mb-4 border border-amber-500/30">
+              <div className="text-xs text-amber-300 mb-2 uppercase">Save as Group</div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newGroupName}
+                  onChange={(e) => setNewGroupName(e.target.value)}
+                  placeholder="Group name (e.g., Friday Night Crew)"
+                  className="flex-1 bg-green-900/50 text-white px-3 py-2 rounded-lg text-sm border border-amber-500/20"
+                />
+                <button
+                  onClick={saveGroup}
+                  className="bg-amber-600 hover:bg-amber-700 px-4 py-2 rounded-lg text-sm font-bold"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          )}
           {currentPlayer?.isHost && (
             <button onClick={async () => { 
               if (players.length < 2) { alert('Need 2+ players'); return; }
@@ -383,7 +476,8 @@ const PokerSettleApp = () => {
                 await updateGame(gameId, { status: 'active' });
               }
               setScreen('game');
-            }} className="w-full bg-red-600 text-white font-bold py-4 rounded-xl mb-3 border-2 border-amber-500/50">START GAME</button>
+            }} 
+            className="w-full bg-red-600 text-white font-bold py-4 rounded-xl mb-3 border-2 border-amber-500/50">START GAME</button>
           )}
           <button onClick={resetApp} className="w-full bg-black/40 text-amber-300 border border-amber-500/30 py-3 rounded-lg">Leave</button>
         </div>
@@ -526,6 +620,7 @@ const PokerSettleApp = () => {
       saveToHistory({
         date: new Date().toISOString(),
         code: gameCode,
+        sessionName: sessionName || null,
         players: updatedPlayers.map(p => ({
           name: p.name,
           buyIn: centsToDollars(p.totalBuyInCents),
@@ -597,15 +692,33 @@ const PokerSettleApp = () => {
             <div className="bg-black/40 rounded-xl p-6 mb-6 border-2 border-amber-500/30">
               <div className="text-sm text-amber-300 mb-4">PAYMENTS</div>
               {settlements.map((txn, i) => (
-                <div key={i} className="bg-green-800/50 rounded-lg p-4 mb-3 border border-amber-500/30">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="font-semibold">{txn.from}</span>
-                    <ArrowRight size={16} className="text-amber-400" />
-                    <span className="font-semibold">{txn.to}</span>
+                <div key={i} className={`rounded-lg p-4 mb-3 border ${txn.paid ? 'bg-green-900/30 border-emerald-500/50' : 'bg-green-800/50 border-amber-500/30'}`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">{txn.from}</span>
+                      <ArrowRight size={16} className="text-amber-400" />
+                      <span className="font-semibold">{txn.to}</span>
+                    </div>
+                    {txn.paid && <div className="text-xs bg-emerald-500 text-white px-2 py-1 rounded font-bold">PAID ✓</div>}
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-2xl font-bold text-emerald-300">${centsToDollars(txn.amountCents)}</span>
-                    {txn.toVenmo && <a href={generateVenmoLink(txn.toVenmo, txn.amountCents)} className="bg-blue-600 px-4 py-2 rounded-lg text-sm font-bold border border-amber-500/30">Venmo</a>}
+                    <div className="flex gap-2">
+                      {txn.toVenmo && !txn.paid && <a href={generateVenmoLink(txn.toVenmo, txn.amountCents)} className="bg-blue-600 px-4 py-2 rounded-lg text-sm font-bold border border-amber-500/30">Venmo</a>}
+                      <button
+                        onClick={async () => {
+                          try {
+                            const updated = await updatePaymentStatus(gameId, i, !txn.paid);
+                            setSettlements(updated);
+                          } catch (error) {
+                            console.error('Error updating payment:', error);
+                          }
+                        }}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold border ${txn.paid ? 'bg-gray-600 border-gray-500' : 'bg-emerald-600 border-emerald-500'}`}
+                      >
+                        {txn.paid ? 'Mark Unpaid' : 'Mark Paid'}
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -638,7 +751,11 @@ if (screen === 'history') {
             {gameHistory.map((g, i) => (
               <div key={i} className="bg-black/40 rounded-xl p-4 border-2 border-amber-500/30">
                 <div className="flex justify-between mb-2">
-                  <div><div className="font-semibold">{new Date(g.date).toLocaleDateString()}</div><div className="text-sm text-amber-300">{g.players.length} players</div></div>
+                  <div>
+                    <div className="font-semibold">{new Date(g.date).toLocaleDateString()}</div>
+                    {g.sessionName && <div className="text-sm text-amber-400 italic">"{g.sessionName}"</div>}
+                    <div className="text-sm text-amber-300">{g.players.length} players</div>
+                  </div>
                   {g.myResult && <div className={`text-xl font-bold ${parseFloat(g.myResult) > 0 ? 'text-emerald-300' : 'text-red-400'}`}>{parseFloat(g.myResult) > 0 ? '+' : ''}${g.myResult}</div>}
                 </div>
                 <div className="text-xs text-amber-500/60 font-mono">Code: {g.code}</div>
@@ -712,6 +829,87 @@ if (screen === 'stats') {
               </div>
             </div>
           </>
+        )}
+        <button onClick={() => setScreen('home')} className="w-full bg-black/40 text-amber-300 border border-amber-500/30 py-3 rounded-lg">Back</button>
+      </div>
+    </div>
+  );
+}
+
+if (screen === 'groups') {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 text-white p-6">
+      <div className="max-w-md mx-auto pt-8">
+        <h2 className="text-3xl font-bold mb-6 text-amber-400">SAVED GROUPS</h2>
+        {savedGroups.length === 0 ? (
+          <div className="text-center py-12 bg-black/40 rounded-xl border-2 border-amber-500/30">
+            <Users size={48} className="mx-auto mb-4 text-amber-400/50" />
+            <p className="text-amber-200/70">No saved groups yet</p>
+            <p className="text-sm text-amber-300/50 mt-2">Create a game and save your player group!</p>
+          </div>
+        ) : (
+          <div className="space-y-3 mb-6">
+            {savedGroups.map(group => (
+              <div key={group.id} className="bg-black/40 rounded-xl p-4 border-2 border-amber-500/30">
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <div className="font-semibold text-lg text-amber-400">{group.name}</div>
+                    <div className="text-sm text-amber-300">{group.players.length} players: {group.players.map(p => p.name).join(', ')}</div>
+                  </div>
+                  <button
+                    onClick={() => deleteGroup(group.id)}
+                    className="text-red-400 hover:text-red-300 text-xl"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <button
+                  onClick={async () => {
+                    loadGroup(group);
+                    try {
+                      const loadedPlayers = group.players.map((p, idx) => ({
+                        id: `${Date.now()}-${idx}`,
+                        name: p.name,
+                        venmoUsername: p.venmoUsername || '',
+                        isHost: idx === 0,
+                        buyInsCents: [],
+                        totalBuyInCents: 0,
+                        finalChipsCents: null,
+                        netResultCents: 0
+                      }));
+                      
+                      const gameData = {
+                        hostId: loadedPlayers[0].id,
+                        hostName: loadedPlayers[0].name,
+                        sessionName: null,
+                        players: loadedPlayers,
+                        status: 'lobby'
+                      };
+                      
+                      const { gameId: newGameId, code } = await createGame(gameData);
+                      
+                      setGameId(newGameId);
+                      setGameCode(code);
+                      setCurrentPlayer(loadedPlayers[0]);
+                      setPlayers(loadedPlayers);
+                      setScreen('lobby');
+                      
+                      const unsub = subscribeToGame(newGameId, (gameData) => {
+                        setPlayers(gameData.players || []);
+                      });
+                      setUnsubscribe(() => unsub);
+                    } catch (error) {
+                      console.error('Error creating game:', error);
+                      alert('Failed to create game');
+                    }
+                  }}
+                  className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-2 rounded-lg mt-2"
+                >
+                  Start Game with this Group
+                </button>
+              </div>
+            ))}
+          </div>
         )}
         <button onClick={() => setScreen('home')} className="w-full bg-black/40 text-amber-300 border border-amber-500/30 py-3 rounded-lg">Back</button>
       </div>
