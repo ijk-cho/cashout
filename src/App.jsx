@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { DollarSign, Users, Plus, Share2, Copy, Check, TrendingUp, History, ArrowRight } from 'lucide-react';
-import { createGame, getGameByCode, updateGame, subscribeToGame } from './gameService';
+import { createGame, getGameByCode, updateGame, subscribeToGame, removePlayer } from './gameService';
 
 const dollarsToCents = (dollarString) => {
   const cleaned = dollarString.replace(/[$\s,]/g, '');
@@ -60,6 +60,7 @@ const PokerSettleApp = () => {
   const [currentPlayer, setCurrentPlayer] = useState(null);
   const [buyInInput, setBuyInInput] = useState('');
   const [settlements, setSettlements] = useState([]);
+  const [gameNotes, setGameNotes] = useState('');
   const [gameHistory, setGameHistory] = useState([]);
   const [copied, setCopied] = useState(false);
   const [unsubscribe, setUnsubscribe] = useState(null);
@@ -110,6 +111,7 @@ const PokerSettleApp = () => {
     setBuyInInput('');
     setSettlements([]);
     setUnsubscribe(null);
+    setGameNotes('');
   };
 
   const createGameHandler = async () => {
@@ -349,7 +351,28 @@ const PokerSettleApp = () => {
             {players.map(p => (
               <div key={p.id} className="flex items-center gap-3 bg-green-800/50 p-3 rounded-lg mb-2 border border-amber-500/20">
                 <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center font-bold">{p.name[0].toUpperCase()}</div>
-                <div><div className="font-semibold">{p.name}</div>{p.isHost && <div className="text-xs text-amber-400">HOST</div>}</div>
+                <div className="flex-1">
+                  <div className="font-semibold">{p.name}</div>
+                  {p.isHost && <div className="text-xs text-amber-400">HOST</div>}
+                </div>
+                {currentPlayer?.isHost && !p.isHost && (
+                  <button 
+                    onClick={async () => {
+                      if (window.confirm(`Remove ${p.name} from the game?`)) {
+                        try {
+                          const updated = await removePlayer(gameId, p.id, players);
+                          setPlayers(updated);
+                        } catch (error) {
+                          console.error('Error removing player:', error);
+                          alert('Failed to remove player');
+                        }
+                      }
+                    }}
+                    className="bg-red-500/50 hover:bg-red-500 px-3 py-1 rounded text-xs font-semibold border border-red-400/30"
+                  >
+                    Remove
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -397,7 +420,30 @@ const PokerSettleApp = () => {
         }
       }
     };
-    
+    const deleteBuyIn = async (playerId, buyInIndex) => {
+      const updatedPlayers = players.map(p => {
+        if (p.id === playerId) {
+          const newBuyIns = p.buyInsCents.filter((_, idx) => idx !== buyInIndex);
+          const newTotal = newBuyIns.reduce((sum, amt) => sum + amt, 0);
+          return {
+            ...p,
+            buyInsCents: newBuyIns,
+            totalBuyInCents: newTotal
+          };
+        }
+        return p;
+      });
+      
+      setPlayers(updatedPlayers);
+      
+      if (gameId) {
+        try {
+          await updateGame(gameId, { players: updatedPlayers });
+        } catch (error) {
+          console.error('Error deleting buy-in:', error);
+        }
+      }
+    };    
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 text-white p-6">
         <div className="max-w-md mx-auto pt-8">
@@ -412,7 +458,28 @@ const PokerSettleApp = () => {
             {players.map(player => (
               <div key={player.id} className="bg-black/40 rounded-xl p-4 border-2 border-amber-500/30">
                 <div className="font-semibold text-white mb-1">{player.name}</div>
-                <div className="text-sm text-amber-300 mb-3">${centsToDollars(player.totalBuyInCents)}</div>
+                <div className="text-sm text-amber-300 mb-2">Total: ${centsToDollars(player.totalBuyInCents)}</div>
+                {player.buyInsCents.length > 0 && (
+                  <div className="mb-3 space-y-1">
+                    {player.buyInsCents.map((amount, idx) => (
+                      <div key={idx} className="flex justify-between items-center text-xs bg-green-900/30 px-2 py-1 rounded">
+                        <span className="text-amber-200/70">Buy-in {idx + 1}: ${centsToDollars(amount)}</span>
+                        {currentPlayer?.isHost && (
+                          <button
+                            onClick={() => {
+                              if (window.confirm(`Delete this $${centsToDollars(amount)} buy-in?`)) {
+                                deleteBuyIn(player.id, idx);
+                              }
+                            }}
+                            className="text-red-400 hover:text-red-300 ml-2"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
                 {currentPlayer?.isHost && (
                   <div>
                     <div className="flex gap-2 mb-2">
@@ -464,7 +531,8 @@ const PokerSettleApp = () => {
           buyIn: centsToDollars(p.totalBuyInCents),
           result: centsToDollars(p.netResultCents)
         })),
-        myResult: currentPlayer ? centsToDollars(updatedPlayers.find(p => p.id === currentPlayer.id)?.netResultCents || 0) : null
+        myResult: currentPlayer ? centsToDollars(updatedPlayers.find(p => p.id === currentPlayer.id)?.netResultCents || 0) : null,
+        notes: gameNotes
       });
 
       if (gameId) {
@@ -537,18 +605,26 @@ const PokerSettleApp = () => {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-2xl font-bold text-emerald-300">${centsToDollars(txn.amountCents)}</span>
-                    {txn.toVenmo && <a href={generateVenmoLink(txn.toVenmo, txn.amountCents)} className="bg-blue-600 px-4 py-2 rounded-lg text-sm font-bold border border-amber-500/30">Venmo
-                    </a>}
-              </div>
+                    {txn.toVenmo && <a href={generateVenmoLink(txn.toVenmo, txn.amountCents)} className="bg-blue-600 px-4 py-2 rounded-lg text-sm font-bold border border-amber-500/30">Venmo</a>}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
+          <div className="bg-black/40 rounded-xl p-6 mb-6 border-2 border-amber-500/30">
+            <label className="block text-sm text-amber-300 mb-2 font-semibold uppercase">Game Notes (Optional)</label>
+            <textarea
+              value={gameNotes}
+              onChange={(e) => setGameNotes(e.target.value)}
+              placeholder="How was the game? Any memorable hands?"
+              className="w-full bg-green-900/50 text-white px-4 py-3 rounded-lg border border-amber-500/20 min-h-[100px] resize-none focus:outline-none focus:ring-2 focus:ring-amber-500"
+            />
+          </div>
+          <button onClick={resetApp} className="w-full bg-red-600 text-white font-bold py-4 rounded-xl border-2 border-amber-500/50">DONE</button>
         </div>
-      )}
-      <button onClick={resetApp} className="w-full bg-red-600 text-white font-bold py-4 rounded-xl border-2 border-amber-500/50">DONE</button>
-    </div>
-  </div>
-);
-}
+      </div>
+    );
+  }
 
 if (screen === 'history') {
   return (
@@ -566,6 +642,7 @@ if (screen === 'history') {
                   {g.myResult && <div className={`text-xl font-bold ${parseFloat(g.myResult) > 0 ? 'text-emerald-300' : 'text-red-400'}`}>{parseFloat(g.myResult) > 0 ? '+' : ''}${g.myResult}</div>}
                 </div>
                 <div className="text-xs text-amber-500/60 font-mono">Code: {g.code}</div>
+                {g.notes && <div className="text-sm text-amber-200/80 mt-2 italic">"{g.notes}"</div>}
               </div>
             ))}
           </div>

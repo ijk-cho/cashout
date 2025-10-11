@@ -104,3 +104,10 @@ export const subscribeToGame = (gameId, callback) => {
 export const deleteExpiredCode = async (code) => {
   await deleteDoc(doc(db, 'activeCodes', code));
 };
+
+// Remove player from game
+export const removePlayer = async (gameId, playerId, players) => {
+  const updatedPlayers = players.filter(p => p.id !== playerId);
+  await updateGame(gameId, { players: updatedPlayers });
+  return updatedPlayers;
+};
