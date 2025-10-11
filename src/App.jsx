@@ -138,6 +138,21 @@ const PokerSettleApp = () => {
     return () => unsubscribe();
   }, []);
 
+  // NEW: Check for game code in URL on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlGameCode = params.get('code');
+    
+    if (urlGameCode && authChecked && user) {
+      // Auto-populate the join game screen
+      setInputCode(urlGameCode.toUpperCase());
+      setScreen('join');
+      
+      // Clean up URL
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [authChecked, user]);
+  
   useEffect(() => {
     const saved = localStorage.getItem('pokerGameGroups');
     if (saved) {
@@ -368,19 +383,26 @@ const updateQuickAmount = (index, value) => {
   };
 
   const copyCode = () => {
-    navigator.clipboard.writeText(gameCode);
+    const gameUrl = `${window.location.origin}${window.location.pathname}?code=${gameCode}`;
+    navigator.clipboard.writeText(gameUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const shareCode = () => {
+    const gameUrl = `${window.location.origin}${window.location.pathname}?code=${gameCode}`;
+    
     if (navigator.share) {
       navigator.share({
         title: 'Join my poker game!',
         text: `Join my poker game with code: ${gameCode}`,
+        url: gameUrl,
       });
     } else {
-      copyCode();
+      // Fallback: copy URL to clipboard
+      navigator.clipboard.writeText(gameUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
@@ -703,15 +725,32 @@ const updateQuickAmount = (index, value) => {
           <h2 className="text-3xl font-bold mb-2 text-amber-400">LOBBY</h2>
           {sessionName && <p className="text-amber-200/70 mb-4 text-lg italic">"{sessionName}"</p>}
           {!sessionName && <div className="mb-4"></div>}
-          <div className="bg-black/40 rounded-xl p-6 mb-6 border-2 border-amber-500/30">
+          <div className="bg-black/40 backdrop-blur-sm rounded-xl p-6 mb-6 border-2 border-amber-500/30">
             <div className="text-center mb-4">
-              <div className="text-sm text-amber-300 mb-2">GAME CODE</div>
-              <div className="text-5xl font-mono font-bold bg-green-900/50 py-4 rounded-lg mb-3">{gameCode}</div>
+              <div className="text-sm text-amber-300 mb-2 font-semibold">GAME CODE</div>
+              <div className="text-5xl font-bold tracking-widest text-amber-400 mb-4">{gameCode}</div>
+              
+              {/* Share Buttons */}
               <div className="flex gap-2">
-                <button onClick={copyCode} className="flex-1 bg-green-800/50 border border-amber-500/30 py-2 rounded-lg text-amber-300">
-                  {copied ? <Check size={18} className="inline" /> : <Copy size={18} className="inline" />} {copied ? 'Copied!' : 'Copy'}
+                <button 
+                  onClick={shareCode}
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 border border-amber-500/30"
+                >
+                  <Share2 size={18} />
+                  Share Link
                 </button>
-                <button onClick={shareCode} className="flex-1 bg-red-600 py-2 rounded-lg border border-amber-500/30"><Share2 size={18} className="inline" /> Share</button>
+                <button 
+                  onClick={copyCode}
+                  className="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 border border-amber-500/30"
+                >
+                  {copied ? <Check size={18} /> : <Copy size={18} />}
+                  {copied ? 'Copied!' : 'Copy Link'}
+                </button>
+              </div>
+              
+              {/* Show the actual URL that will be shared */}
+              <div className="mt-3 text-xs text-amber-200/60 font-mono break-all">
+                {window.location.origin}{window.location.pathname}?code={gameCode}
               </div>
             </div>
           </div>
