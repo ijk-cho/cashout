@@ -85,8 +85,8 @@ const PokerSettleApp = () => {
     currency: 'USD',
     quickBuyInAmounts: [20, 50, 100, 200, 500],
     soundEnabled: true
-  });
 
+  });
   // Edit states
   const [editingDisplayName, setEditingDisplayName] = useState(false);
   const [editingEmail, setEditingEmail] = useState(false);
@@ -104,11 +104,29 @@ const PokerSettleApp = () => {
   const [tempQuickAmounts, setTempQuickAmounts] = useState([]);
   const quickAmounts = [5, 10, 20, 50, 100];
 
+  //PWA
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showInstallButton, setShowInstallButton] = useState(false);
+
   useEffect(() => {
     const saved = localStorage.getItem('pokerGameHistory');
     if (saved) {
       setGameHistory(JSON.parse(saved));
     }
+  }, []);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallButton(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
   }, []);
 
   useEffect(() => {
@@ -292,6 +310,20 @@ const updateQuickAmount = (index, value) => {
 
   };
 
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    
+    if (outcome === 'accepted') {
+      console.log('User accepted install');
+    }
+    
+    setDeferredPrompt(null);
+    setShowInstallButton(false);
+  };  
+
   const createGameHandler = async () => {
     if (!playerName.trim()) return;
     
@@ -404,17 +436,32 @@ const updateQuickAmount = (index, value) => {
         <div className="absolute bottom-20 left-10 text-8xl opacity-5">♥</div>
         
         <div className="max-w-md mx-auto relative z-10">
-        {/* Profile Menu - Top Right */}
-        {user && user !== 'guest' && user.email && (
-          <div className="absolute top-6 right-6 z-30">
+
+        {/* Top Right Buttons */}
+        <div className="absolute top-6 right-6 z-30 flex gap-3 items-center">
+          {showInstallButton && (
+            <button
+              onClick={handleInstallClick}
+              className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold shadow-lg border-2 border-amber-400/50 flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Install App
+            </button>
+          )}
+
+          {user && user !== 'guest' && user.email && (
             <button
               onClick={() => setShowProfileMenu(!showProfileMenu)}
               className="w-12 h-12 bg-gradient-to-br from-red-600 to-red-700 rounded-full flex items-center justify-center font-bold text-white border-2 border-amber-500/50 hover:from-red-700 hover:to-red-800 transition shadow-lg"
             >
               {user.displayName ? user.displayName[0].toUpperCase() : user.email[0].toUpperCase()}
             </button>
+          )}
+        </div>
             
-            {showProfileMenu && (
+            {user && user !== 'guest' && user.email && showProfileMenu && (
               <>
                 <div 
                   className="fixed inset-0 z-10" 
@@ -481,8 +528,7 @@ const updateQuickAmount = (index, value) => {
                 </div>
               </>
             )}
-          </div>
-        )}
+
         {user === 'guest' && (
           <div className="bg-amber-500/20 border border-amber-500 rounded-lg p-3 mb-4 text-center">
             <p className="text-amber-200 text-sm font-semibold">⚠️ Guest Mode - History not saved</p>
