@@ -311,6 +311,7 @@ const updateQuickAmount = (index, value) => {
   };
 
   const handleInstallClick = async () => {
+    console.log('Install clicked, deferredPrompt:', deferredPrompt);
     if (!deferredPrompt) return;
     
     deferredPrompt.prompt();
