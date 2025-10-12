@@ -5,6 +5,7 @@ import Auth from './Auth';
 import ProfilePage from './ProfilePage';
 import { DollarSign, Users, Plus, Share2, Copy, Check, TrendingUp, History, ArrowRight } from 'lucide-react';
 import { createGame, getGameByCode, updateGame, subscribeToGame, removePlayer, updatePaymentStatus } from './gameService';
+import { soundManager } from './sounds';
 
 const dollarsToCents = (dollarString) => {
   const cleaned = dollarString.replace(/[$\s,]/g, '');
@@ -573,6 +574,28 @@ const updateQuickAmount = (index, value) => {
   }
   };
 
+  const addBuyIn = async () => {
+    if (!buyInInput || parseFloat(buyInInput) <= 0) return;
+    
+    soundManager.play('chip');
+    
+    const amountCents = dollarsToCents(buyInInput);
+    const updatedPlayers = players.map(p => {
+      if (p.id === currentPlayer?.id) {
+        return {
+          ...p,
+          buyInsCents: [...p.buyInsCents, amountCents],
+          totalBuyInCents: p.totalBuyInCents + amountCents
+        };
+      }
+      return p;
+    });
+
+    await updateGame(gameId, { players: updatedPlayers });
+    setPlayers(updatedPlayers);
+    setBuyInInput('');
+  };
+
   const copyCode = () => {
     const gameUrl = `${window.location.origin}${window.location.pathname}?code=${gameCode}`;
     navigator.clipboard.writeText(gameUrl);
@@ -601,6 +624,57 @@ const updateQuickAmount = (index, value) => {
     const cleanUsername = username?.replace('@', '') || '';
     const amount = centsToDollars(amountCents);
     return `venmo://paycharge?txn=pay&recipients=${cleanUsername}&amount=${amount}&note=Poker%20game%20settlement`;
+  };
+
+  const startGame = async () => {
+    soundManager.play('shuffle');
+    setScreen('game');
+  };
+
+  const kickPlayer = async (playerId) => {
+    if (!window.confirm('Remove this player?')) return;
+    
+    const updatedPlayers = players.filter(p => p.id !== playerId);
+    await updateGame(gameId, { players: updatedPlayers });
+    setPlayers(updatedPlayers);
+  };
+
+  const updateFinalChips = (playerId, value) => {
+    const amountCents = dollarsToCents(value);
+    const updatedPlayers = players.map(p => {
+      if (p.id === playerId) {
+        const netResultCents = amountCents - p.totalBuyInCents;
+        return { ...p, finalChipsCents: amountCents, netResultCents };
+      }
+      return p;
+    });
+    setPlayers(updatedPlayers);
+  };
+
+  const endGame = async () => {
+    const settlementsData = optimizeSettlement(players);
+    setSettlements(settlementsData);
+    setScreen('settlement');
+    
+    // Save to history
+    const myPlayer = players.find(p => p.id === currentPlayer?.id);
+    saveToHistory({
+      date: new Date().toISOString(),
+      code: gameCode,
+      sessionName,
+      players: players,
+      myResult: myPlayer ? centsToDollars(myPlayer.netResultCents) : null,
+      notes: gameNotes,
+      groupId: selectedGroupId
+    });
+  };
+
+  const markPaid = (index) => {
+    soundManager.play('cashRegister');
+    
+    const updated = [...settlements];
+    updated[index].paid = !updated[index].paid;
+    setSettlements(updated);
   };
 
   // Show loading while checking auth
@@ -2131,7 +2205,11 @@ if (screen === 'settings') {
               <div className="flex items-center justify-between">
                 <span className="text-white">{userSettings.soundEnabled ? 'Enabled' : 'Disabled'}</span>
                 <button
-                  onClick={() => setUserSettings({...userSettings, soundEnabled: !userSettings.soundEnabled})}
+                  onClick={() => {
+                    const newValue = !userSettings.soundEnabled;
+                    setUserSettings({...userSettings, soundEnabled: newValue});
+                    soundManager.setEnabled(newValue);
+                  }}
                   className={`relative w-14 h-7 rounded-full transition-colors ${
                     userSettings.soundEnabled ? 'bg-green-600' : 'bg-gray-600'
                   }`}
