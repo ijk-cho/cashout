@@ -530,6 +530,49 @@ const updateQuickAmount = (index, value) => {
     }
   };
 
+  const joinGameHandler = async () => {
+  if (!inputCode.trim() || !playerName.trim()) return;
+  
+  try {
+    const gameData = await getGameByCode(inputCode);
+    
+    if (!gameData) {
+      alert('Game not found. Please check the code.');
+      return;
+    }
+    
+    const newPlayer = {
+      id: Date.now().toString(),
+      name: playerName,
+      venmoUsername,
+      isHost: false,
+      buyInsCents: [],
+      totalBuyInCents: 0,
+      finalChipsCents: null,
+      netResultCents: 0
+    };
+    
+    const updatedPlayers = [...gameData.players, newPlayer];
+    await updateGame(gameData.id, { players: updatedPlayers });
+    
+    setGameId(gameData.id);
+    setGameCode(inputCode);
+    setCurrentPlayer(newPlayer);
+    setPlayers(updatedPlayers);
+    setSessionName(gameData.sessionName || '');
+    setScreen('lobby');
+    
+    const unsub = subscribeToGame(gameData.id, (data) => {
+      setPlayers(data.players || []);
+    });
+    setUnsubscribe(() => unsub);
+    
+  } catch (error) {
+    console.error('Error joining game:', error);
+    alert('Failed to join game. Please try again.');
+  }
+  };
+
   const copyCode = () => {
     const gameUrl = `${window.location.origin}${window.location.pathname}?code=${gameCode}`;
     navigator.clipboard.writeText(gameUrl);
