@@ -108,6 +108,9 @@ const PokerSettleApp = () => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallButton, setShowInstallButton] = useState(false);
 
+  // Analytics state
+  const [analyticsView, setAnalyticsView] = useState('overview'); // 'overview', 'trends', 'players'
+
   useEffect(() => {
     const saved = localStorage.getItem('pokerGameHistory');
     if (saved) {
@@ -232,6 +235,70 @@ const deleteGroup = (groupId) => {
   const updated = savedGroups.filter(g => g.id !== groupId);
   setSavedGroups(updated);
   localStorage.setItem('pokerGameGroups', JSON.stringify(updated));
+};
+
+// Analytics functions
+const getStreakData = () => {
+  const myGames = gameHistory.filter(g => g.myResult !== null).reverse();
+  let currentStreak = 0;
+  let longestWinStreak = 0;
+  let longestLoseStreak = 0;
+  let tempWinStreak = 0;
+  let tempLoseStreak = 0;
+
+  myGames.forEach((game, idx) => {
+    const result = parseFloat(game.myResult);
+    
+    if (result > 0) {
+      tempWinStreak++;
+      tempLoseStreak = 0;
+      if (idx === myGames.length - 1) currentStreak = tempWinStreak;
+      longestWinStreak = Math.max(longestWinStreak, tempWinStreak);
+    } else if (result < 0) {
+      tempLoseStreak++;
+      tempWinStreak = 0;
+      if (idx === myGames.length - 1) currentStreak = -tempLoseStreak;
+      longestLoseStreak = Math.max(longestLoseStreak, tempLoseStreak);
+    }
+  });
+
+  return { currentStreak, longestWinStreak, longestLoseStreak };
+};
+
+const getProfitByMonth = () => {
+  const monthlyData = {};
+  
+  gameHistory.filter(g => g.myResult !== null).forEach(game => {
+    const date = new Date(game.date);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    
+    if (!monthlyData[monthKey]) {
+      monthlyData[monthKey] = { month: monthKey, profit: 0, games: 0 };
+    }
+    
+    monthlyData[monthKey].profit += parseFloat(game.myResult);
+    monthlyData[monthKey].games += 1;
+  });
+
+  return Object.values(monthlyData).sort((a, b) => a.month.localeCompare(b.month));
+};
+
+const getBestWorstDays = () => {
+  const dayData = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
+  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  
+  gameHistory.filter(g => g.myResult !== null).forEach(game => {
+    const day = new Date(game.date).getDay();
+    dayData[day].push(parseFloat(game.myResult));
+  });
+
+  const dayStats = Object.entries(dayData).map(([day, results]) => ({
+    day: dayNames[day],
+    avgProfit: results.length > 0 ? (results.reduce((a, b) => a + b, 0) / results.length) : 0,
+    games: results.length
+  })).filter(d => d.games > 0).sort((a, b) => b.avgProfit - a.avgProfit);
+
+  return dayStats;
 };
 
 // Settings functions
@@ -616,19 +683,6 @@ const updateQuickAmount = (index, value) => {
               <span className="text-lg tracking-wide">JOIN GAME</span>
             </button>
           </div>
-          <button
-            onClick={() => {
-              console.log('Prompt available:', deferredPrompt);
-              if (deferredPrompt) {
-                handleInstallClick();
-              } else {
-                alert('Install prompt not available. Try: 1) Use HTTPS/localhost 2) Clear site data 3) Use Chrome/Edge');
-              }
-            }}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg"
-          >
-            Test Install (Dev Only)
-          </button>
           {savedGroups.length > 0 && (
             <button
               onClick={() => { setScreen('groups'); }}
@@ -638,14 +692,18 @@ const updateQuickAmount = (index, value) => {
               <span className="text-lg tracking-wide">LOAD SAVED GROUP</span>
             </button>
           )}
-          <div className="grid grid-cols-2 gap-3">
-            <button onClick={() => setScreen('history')} className="bg-black/40 backdrop-blur-sm hover:bg-black/60 text-amber-300 border border-amber-500/30 py-4 px-4 rounded-lg flex items-center justify-center gap-2 transition font-semibold">
+          <div className="grid grid-cols-3 gap-3">
+            <button onClick={() => setScreen('history')} className="bg-black/40 backdrop-blur-sm hover:bg-black/60 text-amber-300 border border-amber-500/30 py-4 px-4 rounded-lg flex flex-col items-center justify-center gap-1 transition font-semibold">
               <History size={20} />
-              History
+              <span className="text-xs">History</span>
             </button>
-            <button onClick={() => setScreen('stats')} className="bg-black/40 backdrop-blur-sm hover:bg-black/60 text-amber-300 border border-amber-500/30 py-4 px-4 rounded-lg flex items-center justify-center gap-2 transition font-semibold">
+            <button onClick={() => setScreen('stats')} className="bg-black/40 backdrop-blur-sm hover:bg-black/60 text-amber-300 border border-amber-500/30 py-4 px-4 rounded-lg flex flex-col items-center justify-center gap-1 transition font-semibold">
               <TrendingUp size={20} />
-              Stats
+              <span className="text-xs">Stats</span>
+            </button>
+            <button onClick={() => setScreen('analytics')} className="bg-black/40 backdrop-blur-sm hover:bg-black/60 text-amber-300 border border-amber-500/30 py-4 px-4 rounded-lg flex flex-col items-center justify-center gap-1 transition font-semibold">
+              <TrendingUp size={20} />
+              <span className="text-xs">Analytics</span>
             </button>
           </div>
         </div>
@@ -1249,6 +1307,150 @@ if (screen === 'stats') {
           </>
         )}
         <button onClick={() => setScreen('home')} className="w-full bg-black/40 text-amber-300 border border-amber-500/30 py-3 rounded-lg">Back</button>
+      </div>
+    </div>
+  );
+}
+
+if (screen === 'analytics') {
+  const streaks = getStreakData();
+  const monthlyData = getProfitByMonth();
+  const dayStats = getBestWorstDays();
+  const myGames = gameHistory.filter(g => g.myResult !== null);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 text-white p-6">
+      <div className="max-w-4xl mx-auto pt-8">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-3xl font-bold text-amber-400">ANALYTICS</h2>
+          <button onClick={() => setScreen('home')} className="bg-black/40 text-amber-300 border border-amber-500/30 px-4 py-2 rounded-lg">
+            Back
+          </button>
+        </div>
+
+        {myGames.length === 0 ? (
+          <div className="text-center py-12 bg-black/40 rounded-xl border-2 border-amber-500/30">
+            <TrendingUp size={48} className="mx-auto mb-4 text-amber-400/50" />
+            <p className="text-amber-200/70">Play some games to see analytics!</p>
+          </div>
+        ) : (
+          <>
+            {/* Tab Navigation */}
+            <div className="flex gap-2 mb-6 bg-black/40 rounded-lg p-1">
+              <button
+                onClick={() => setAnalyticsView('overview')}
+                className={`flex-1 py-2 rounded-lg transition ${
+                  analyticsView === 'overview' ? 'bg-amber-600 text-white' : 'text-amber-300'
+                }`}
+              >
+                Overview
+              </button>
+              <button
+                onClick={() => setAnalyticsView('trends')}
+                className={`flex-1 py-2 rounded-lg transition ${
+                  analyticsView === 'trends' ? 'bg-amber-600 text-white' : 'text-amber-300'
+                }`}
+              >
+                Trends
+              </button>
+              <button
+                onClick={() => setAnalyticsView('players')}
+                className={`flex-1 py-2 rounded-lg transition ${
+                  analyticsView === 'players' ? 'bg-amber-600 text-white' : 'text-amber-300'
+                }`}
+              >
+                Players
+              </button>
+            </div>
+
+            {/* Overview Tab */}
+            {analyticsView === 'overview' && (
+              <div className="space-y-6">
+                {/* Streaks */}
+                <div className="bg-black/40 rounded-xl p-6 border-2 border-amber-500/30">
+                  <h3 className="text-xl font-bold text-amber-400 mb-4">Streaks</h3>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="bg-green-800/50 rounded-lg p-4 text-center">
+                      <div className={`text-3xl font-bold ${streaks.currentStreak > 0 ? 'text-emerald-300' : streaks.currentStreak < 0 ? 'text-red-400' : 'text-gray-400'}`}>
+                        {streaks.currentStreak > 0 ? `+${streaks.currentStreak}` : streaks.currentStreak}
+                      </div>
+                      <div className="text-xs text-amber-200/70 mt-1">Current Streak</div>
+                    </div>
+                    <div className="bg-green-800/50 rounded-lg p-4 text-center">
+                      <div className="text-3xl font-bold text-emerald-300">{streaks.longestWinStreak}</div>
+                      <div className="text-xs text-amber-200/70 mt-1">Best Win Streak</div>
+                    </div>
+                    <div className="bg-green-800/50 rounded-lg p-4 text-center">
+                      <div className="text-3xl font-bold text-red-400">{streaks.longestLoseStreak}</div>
+                      <div className="text-xs text-amber-200/70 mt-1">Worst Lose Streak</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Best Days */}
+                <div className="bg-black/40 rounded-xl p-6 border-2 border-amber-500/30">
+                  <h3 className="text-xl font-bold text-amber-400 mb-4">Performance by Day</h3>
+                  <div className="space-y-2">
+                    {dayStats.map((stat, idx) => (
+                      <div key={stat.day} className="flex items-center justify-between bg-green-800/50 rounded-lg p-3">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
+                            idx === 0 ? 'bg-yellow-500 text-black' : 
+                            idx === 1 ? 'bg-gray-400 text-black' : 
+                            idx === 2 ? 'bg-amber-700 text-white' : 'bg-gray-600 text-white'
+                          }`}>
+                            {idx + 1}
+                          </div>
+                          <div>
+                            <div className="font-semibold text-white">{stat.day}</div>
+                            <div className="text-xs text-amber-200/70">{stat.games} games</div>
+                          </div>
+                        </div>
+                        <div className={`text-xl font-bold ${stat.avgProfit >= 0 ? 'text-emerald-300' : 'text-red-400'}`}>
+                          {stat.avgProfit >= 0 ? '+' : ''}${stat.avgProfit.toFixed(2)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Trends Tab */}
+            {analyticsView === 'trends' && (
+              <div className="space-y-6">
+                <div className="bg-black/40 rounded-xl p-6 border-2 border-amber-500/30">
+                  <h3 className="text-xl font-bold text-amber-400 mb-4">Monthly Profit/Loss</h3>
+                  {monthlyData.length > 0 ? (
+                    <div className="space-y-2">
+                      {monthlyData.map(data => (
+                        <div key={data.month} className="flex items-center justify-between bg-green-800/50 rounded-lg p-3">
+                          <div>
+                            <div className="font-semibold text-white">{data.month}</div>
+                            <div className="text-xs text-amber-200/70">{data.games} games</div>
+                          </div>
+                          <div className={`text-xl font-bold ${data.profit >= 0 ? 'text-emerald-300' : 'text-red-400'}`}>
+                            {data.profit >= 0 ? '+' : ''}${data.profit.toFixed(2)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-amber-200/70 text-center">Not enough data yet</p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Players Tab */}
+            {analyticsView === 'players' && (
+              <div className="bg-black/40 rounded-xl p-6 border-2 border-amber-500/30">
+                <h3 className="text-xl font-bold text-amber-400 mb-4">Player Stats</h3>
+                <p className="text-amber-200/70 text-center">Coming soon - Track performance against specific players</p>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
