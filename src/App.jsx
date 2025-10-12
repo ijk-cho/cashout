@@ -598,195 +598,203 @@ const updateQuickAmount = (index, value) => {
   if (screen === 'home') {
     const stats = calculateStats();
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 text-white p-6 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10" style={{
-          backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)',
-          backgroundSize: '32px 32px'
+      <div className="min-h-screen bg-poker-green relative overflow-hidden">
+        {/* Felt texture overlay */}
+        <div className="absolute inset-0 opacity-5" style={{
+          backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,215,0,0.15) 1px, transparent 0)',
+          backgroundSize: '40px 40px'
         }}></div>
-        <div className="absolute top-10 right-10 text-8xl opacity-5">♠</div>
-        <div className="absolute bottom-20 left-10 text-8xl opacity-5">♥</div>
         
-        <div className="max-w-md mx-auto relative z-10">
-
-        {/* Top Right Buttons - Stacked */}
-        <div className="absolute top-6 right-6 z-30 flex flex-col gap-2 items-end">
-          {user && user !== 'guest' && user.email && (
-            <button
-              onClick={() => setShowProfileMenu(!showProfileMenu)}
-              className="w-12 h-12 bg-gradient-to-br from-red-600 to-red-700 rounded-full flex items-center justify-center font-bold text-white border-2 border-amber-500/50 hover:from-red-700 hover:to-red-800 transition shadow-lg"
-            >
-              {user.displayName ? user.displayName[0].toUpperCase() : user.email[0].toUpperCase()}
-            </button>
-          )}
-          
-          {showInstallButton && (
-            <button
-              onClick={handleInstallClick}
-              className="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm rounded-lg font-semibold shadow-lg border-2 border-amber-400/50 flex items-center gap-1"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-              Install
-            </button>
-          )}
-        </div>
-            
-            {user && user !== 'guest' && user.email && showProfileMenu && (
-              <>
-                <div 
-                  className="fixed inset-0 z-10" 
-                  onClick={() => setShowProfileMenu(false)}
-                ></div>
-                
-                <div className="absolute right-0 mt-2 w-64 bg-slate-800 rounded-xl shadow-2xl border-2 border-amber-500/30 overflow-hidden z-20">
-                  <div className="bg-gradient-to-r from-red-600 to-red-700 p-4 text-center">
-                    <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center font-bold text-2xl text-slate-900 mx-auto mb-2 border-4 border-amber-200">
-                      {user.displayName ? user.displayName[0].toUpperCase() : user.email[0].toUpperCase()}
-                    </div>
-                    <div className="font-bold text-white">{user.displayName || 'Player'}</div>
-                    <div className="text-xs text-amber-100">{user.email}</div>
-                  </div>
-                  
-                  <div className="p-2">
-                    <button
-                      onClick={() => {
-                        setShowProfileMenu(false);
-                        setScreen('profile');
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-amber-500/20 rounded-lg transition text-left text-amber-200"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                      Your Profile
-                    </button>
-                    
-                    <button
-                      onClick={() => {
-                        setShowProfileMenu(false);
-                        setScreen('settings');
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-amber-500/20 rounded-lg transition text-left text-amber-200"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      Settings
-                    </button>
-                    
-                    <div className="border-t border-amber-500/30 my-2"></div>
-                    
-                    <button
-                      onClick={() => {
-                        if (window.confirm('Sign out?')) {
-                          auth.signOut();
-                          setUser(undefined);
-                          setGameHistory([]);
-                          setSavedGroups([]);
-                          setShowProfileMenu(false);
-                        }
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-500/20 rounded-lg transition text-left text-red-400"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                      </svg>
-                      Sign Out
-                    </button>
-                  </div>
-                </div>
-              </>
+        {/* Decorative elements */}
+        <div className="absolute top-10 right-10 text-8xl opacity-10 text-poker-gold">♠</div>
+        <div className="absolute bottom-20 left-10 text-8xl opacity-10 text-poker-gold">♥</div>
+        
+        <div className="container mx-auto px-4 py-6 max-w-2xl relative z-10">
+          {/* Top Right Buttons - Stacked */}
+          <div className="absolute top-6 right-6 z-30 flex flex-col gap-2 items-end">
+            {user && user !== 'guest' && user.email && (
+              <button
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                className="w-12 h-12 bg-gradient-to-br from-poker-burgundy to-poker-burgundy-dark rounded-full flex items-center justify-center font-bold text-poker-cream border-2 border-poker-gold/50 hover:border-poker-gold transition shadow-lg"
+              >
+                {user.displayName ? user.displayName[0].toUpperCase() : user.email[0].toUpperCase()}
+              </button>
             )}
-
-        {user === 'guest' && (
-          <div className="bg-amber-500/20 border border-amber-500 rounded-lg p-3 mb-4 text-center">
-            <p className="text-amber-200 text-sm font-semibold">⚠️ Guest Mode - History not saved</p>
-            <button
-              onClick={() => setUser(null)}
-              className="text-amber-400 text-xs underline mt-1"
-            >
-              Sign in to save history
-            </button>
+            
+            {showInstallButton && (
+              <button
+                onClick={handleInstallClick}
+                className="px-3 py-2 bg-poker-gold hover:bg-poker-gold-light text-poker-green text-sm rounded-card font-semibold shadow-lg border-2 border-poker-gold-dark flex items-center gap-1 transition"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Install
+              </button>
+            )}
           </div>
-        )}
-          <div className="text-center mb-8 pt-8">
-            <div className="inline-flex items-center justify-center w-24 h-24 rounded-full mb-4"
-                 style={{
-                   background: 'linear-gradient(145deg, #dc2626, #991b1b)',
-                   boxShadow: '0 8px 32px rgba(220, 38, 38, 0.4), inset 0 0 0 4px #fef3c7, inset 0 0 0 8px #dc2626'
-                 }}>
-              <DollarSign size={40} className="text-amber-100" strokeWidth={3} />
+
+          {/* Profile Dropdown */}
+          {user && user !== 'guest' && user.email && showProfileMenu && (
+            <>
+              <div 
+                className="fixed inset-0 z-10" 
+                onClick={() => setShowProfileMenu(false)}
+              ></div>
+              
+              <div className="absolute right-6 top-20 w-64 bg-poker-green-light rounded-card-lg shadow-2xl border-2 border-poker-gold/30 overflow-hidden z-20">
+                <div className="bg-gradient-to-r from-poker-burgundy to-poker-burgundy-dark p-4 text-center">
+                  <div className="w-16 h-16 bg-gradient-to-br from-poker-gold to-poker-gold-dark rounded-full flex items-center justify-center font-bold text-2xl text-poker-green mx-auto mb-2 border-4 border-poker-gold-light">
+                    {user.displayName ? user.displayName[0].toUpperCase() : user.email[0].toUpperCase()}
+                  </div>
+                  <div className="font-semibold text-poker-cream">{user.displayName || 'Player'}</div>
+                  <div className="text-xs text-poker-grey">{user.email}</div>
+                </div>
+                
+                <div className="p-2">
+                  <button
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      setScreen('profile');
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-poker-gold/20 rounded-lg transition text-left text-poker-cream"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    Your Profile
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      setScreen('settings');
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-poker-gold/20 rounded-lg transition text-left text-poker-cream"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Settings
+                  </button>
+                  
+                  <div className="border-t border-poker-gold/30 my-2"></div>
+                  
+                  <button
+                    onClick={() => {
+                      if (window.confirm('Sign out?')) {
+                        auth.signOut();
+                        setUser(undefined);
+                        setGameHistory([]);
+                        setSavedGroups([]);
+                        setShowProfileMenu(false);
+                      }
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-poker-burgundy/20 rounded-lg transition text-left text-poker-burgundy"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Guest Mode Warning */}
+          {user === 'guest' && (
+            <div className="bg-poker-gold/20 border border-poker-gold rounded-card-lg p-3 mb-4 text-center mt-20">
+              <p className="text-poker-gold text-sm font-semibold">⚠️ Guest Mode - History not saved</p>
+              <button
+                onClick={() => setUser(null)}
+                className="text-poker-gold-light text-xs underline mt-1 hover:text-poker-gold-dark"
+              >
+                Sign in to save history
+              </button>
             </div>
-            <h1 className="text-5xl font-bold mb-2 tracking-tight" style={{textShadow: '2px 2px 4px rgba(0,0,0,0.5)'}}>
+          )}
+
+          {/* Header */}
+          <div className="text-center mb-8 pt-20">
+            <div className="inline-flex items-center justify-center w-24 h-24 rounded-full mb-4 bg-gradient-to-br from-poker-burgundy to-poker-burgundy-dark border-4 border-poker-gold shadow-2xl">
+              <DollarSign size={40} className="text-poker-gold" strokeWidth={3} />
+            </div>
+            <h1 className="text-6xl font-serif font-bold mb-2 text-poker-gold" style={{textShadow: '3px 3px 6px rgba(0,0,0,0.5)'}}>
               CASHOUT
             </h1>
-            <div className="inline-block bg-amber-500 text-green-900 px-4 py-1 rounded-full text-sm font-bold tracking-wide">
+            <div className="inline-block bg-poker-gold text-poker-green px-6 py-2 rounded-full text-sm font-bold tracking-wide shadow-lg">
               SETTLE YOUR POKER GAMES
             </div>
           </div>
 
+          {/* Stats Cards */}
           {stats.totalGames > 0 && (
-            <div className="bg-black/40 backdrop-blur-sm rounded-xl p-5 mb-6 border-2 border-amber-500/30">
+            <div className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-5 mb-6 border border-poker-gold/30 shadow-xl">
               <div className="grid grid-cols-3 gap-4 text-center">
-                <div className="bg-green-800/50 rounded-lg p-3">
-                  <div className="text-3xl font-bold text-amber-400">{stats.totalGames}</div>
-                  <div className="text-xs text-amber-200/70 uppercase tracking-wide font-semibold">Games</div>
+                <div className="bg-poker-green/50 rounded-card p-3 border border-poker-gold/20">
+                  <div className="text-3xl font-mono font-bold text-poker-gold">{stats.totalGames}</div>
+                  <div className="text-xs text-poker-grey uppercase tracking-wide font-semibold">Games</div>
                 </div>
-                <div className="bg-green-800/50 rounded-lg p-3">
-                  <div className={`text-3xl font-bold ${parseFloat(stats.totalResult) >= 0 ? 'text-emerald-300' : 'text-red-400'}`}>
+                <div className="bg-poker-green/50 rounded-card p-3 border border-poker-gold/20">
+                  <div className={`text-3xl font-mono font-bold ${parseFloat(stats.totalResult) >= 0 ? 'text-emerald-300' : 'text-poker-burgundy'}`}>
                     ${stats.totalResult}
                   </div>
-                  <div className="text-xs text-amber-200/70 uppercase tracking-wide font-semibold">Net</div>
+                  <div className="text-xs text-poker-grey uppercase tracking-wide font-semibold">Net</div>
                 </div>
-                <div className="bg-green-800/50 rounded-lg p-3">
-                  <div className="text-3xl font-bold text-amber-400">{stats.winRate}%</div>
-                  <div className="text-xs text-amber-200/70 uppercase tracking-wide font-semibold">Win Rate</div>
+                <div className="bg-poker-green/50 rounded-card p-3 border border-poker-gold/20">
+                  <div className="text-3xl font-mono font-bold text-poker-gold">{stats.winRate}%</div>
+                  <div className="text-xs text-poker-grey uppercase tracking-wide font-semibold">Win Rate</div>
                 </div>
               </div>
             </div>
           )}
 
+          {/* Main Action Buttons */}
           <div className="space-y-4 mb-6">
             <button
               onClick={() => setScreen('host')}
-              className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-5 px-6 rounded-xl flex items-center justify-center gap-3 transition shadow-lg border-2 border-amber-500/50"
+              className="w-full bg-gradient-to-r from-poker-burgundy to-poker-burgundy-dark hover:from-poker-burgundy-dark hover:to-poker-burgundy text-poker-cream font-bold py-5 px-6 rounded-card-lg flex items-center justify-center gap-3 transition shadow-xl border-2 border-poker-gold/50 hover:border-poker-gold"
             >
               <Users size={24} />
-              <span className="text-lg tracking-wide">HOST NEW GAME</span>
+              <span className="text-lg tracking-wide font-serif">HOST NEW GAME</span>
             </button>
             <button
               onClick={() => setScreen('join')}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-5 px-6 rounded-xl flex items-center justify-center gap-3 transition shadow-lg border-2 border-amber-500/50"
+              className="w-full bg-gradient-to-r from-poker-gold to-poker-gold-dark hover:from-poker-gold-light hover:to-poker-gold text-poker-green font-bold py-5 px-6 rounded-card-lg flex items-center justify-center gap-3 transition shadow-xl border-2 border-poker-gold-dark"
             >
               <Plus size={24} />
-              <span className="text-lg tracking-wide">JOIN GAME</span>
+              <span className="text-lg tracking-wide font-serif">JOIN GAME</span>
             </button>
           </div>
+
+          {/* Load Group Button */}
           {savedGroups.length > 0 && (
             <button
               onClick={() => { setScreen('groups'); }}
-              className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition shadow-lg border-2 border-amber-500/50 mb-4"
+              className="w-full bg-poker-green-light hover:bg-poker-green text-poker-gold border-2 border-poker-gold/50 hover:border-poker-gold font-bold py-4 px-6 rounded-card-lg flex items-center justify-center gap-3 transition shadow-lg mb-4"
             >
               <Users size={24} />
-              <span className="text-lg tracking-wide">LOAD SAVED GROUP</span>
+              <span className="text-lg tracking-wide font-serif">LOAD SAVED GROUP</span>
             </button>
           )}
+
+          {/* Navigation Grid */}
           <div className="grid grid-cols-2 gap-3">
-            <button onClick={() => setScreen('history')} className="bg-black/40 backdrop-blur-sm hover:bg-black/60 text-amber-300 border border-amber-500/30 py-4 px-4 rounded-lg flex flex-col items-center justify-center gap-1 transition font-semibold">
+            <button onClick={() => setScreen('history')} className="bg-poker-green-light/80 backdrop-blur-sm hover:bg-poker-green-light text-poker-gold border border-poker-gold/30 hover:border-poker-gold/50 py-4 px-4 rounded-card flex flex-col items-center justify-center gap-1 transition font-semibold shadow-lg">
               <History size={20} />
               <span className="text-xs">History</span>
             </button>
-            <button onClick={() => setScreen('stats')} className="bg-black/40 backdrop-blur-sm hover:bg-black/60 text-amber-300 border border-amber-500/30 py-4 px-4 rounded-lg flex flex-col items-center justify-center gap-1 transition font-semibold">
+            <button onClick={() => setScreen('stats')} className="bg-poker-green-light/80 backdrop-blur-sm hover:bg-poker-green-light text-poker-gold border border-poker-gold/30 hover:border-poker-gold/50 py-4 px-4 rounded-card flex flex-col items-center justify-center gap-1 transition font-semibold shadow-lg">
               <TrendingUp size={20} />
               <span className="text-xs">Stats</span>
             </button>
-            <button onClick={() => setScreen('analytics')} className="bg-black/40 backdrop-blur-sm hover:bg-black/60 text-amber-300 border border-amber-500/30 py-4 px-4 rounded-lg flex flex-col items-center justify-center gap-1 transition font-semibold">
+            <button onClick={() => setScreen('analytics')} className="bg-poker-green-light/80 backdrop-blur-sm hover:bg-poker-green-light text-poker-gold border border-poker-gold/30 hover:border-poker-gold/50 py-4 px-4 rounded-card flex flex-col items-center justify-center gap-1 transition font-semibold shadow-lg">
               <TrendingUp size={20} />
               <span className="text-xs">Analytics</span>
             </button>
-            <button onClick={() => setScreen('leaderboards')} className="bg-black/40 backdrop-blur-sm hover:bg-black/60 text-amber-300 border border-amber-500/30 py-4 px-4 rounded-lg flex flex-col items-center justify-center gap-1 transition font-semibold">
+            <button onClick={() => setScreen('leaderboards')} className="bg-poker-green-light/80 backdrop-blur-sm hover:bg-poker-green-light text-poker-gold border border-poker-gold/30 hover:border-poker-gold/50 py-4 px-4 rounded-card flex flex-col items-center justify-center gap-1 transition font-semibold shadow-lg">
               <span className="text-xl">🏆</span>
               <span className="text-xs">Leaders</span>
             </button>
