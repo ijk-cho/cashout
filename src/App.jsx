@@ -111,6 +111,8 @@ const PokerSettleApp = () => {
   // Analytics state
   const [analyticsView, setAnalyticsView] = useState('overview'); // 'overview', 'trends', 'players'
 
+  const [selectedGroupId, setSelectedGroupId] = useState(null);
+
   useEffect(() => {
     const saved = localStorage.getItem('pokerGameHistory');
     if (saved) {
@@ -227,6 +229,7 @@ const loadGroup = (group) => {
   setPlayers(loadedPlayers);
   setCurrentPlayer(loadedPlayers[0]);
   setPlayerName(loadedPlayers[0].name);
+  setSelectedGroupId(group.id); // Track which group is being used
   setShowGroupSelector(false);
 };
 
@@ -300,6 +303,82 @@ const getBestWorstDays = () => {
 
   return dayStats;
 };
+
+// Leaderboard functions
+const getGroupLeaderboard = (groupId) => {
+  const groupGames = gameHistory.filter(g => g.groupId === groupId);
+  const playerStats = {};
+
+  groupGames.forEach(game => {
+    game.players.forEach(player => {
+      if (!playerStats[player.name]) {
+        playerStats[player.name] = {
+          name: player.name,
+          games: 0,
+          wins: 0,
+          totalProfit: 0,
+          biggestWin: 0,
+          biggestLoss: 0
+        };
+      }
+
+      const result = player.netResultCents / 100;
+      playerStats[player.name].games++;
+      playerStats[player.name].totalProfit += result;
+      
+      if (result > 0) {
+        playerStats[player.name].wins++;
+        playerStats[player.name].biggestWin = Math.max(playerStats[player.name].biggestWin, result);
+      } else if (result < 0) {
+        playerStats[player.name].biggestLoss = Math.min(playerStats[player.name].biggestLoss, result);
+      }
+    });
+  });
+
+  return Object.values(playerStats)
+    .map(p => ({
+      ...p,
+      winRate: p.games > 0 ? ((p.wins / p.games) * 100).toFixed(1) : 0,
+      avgProfit: p.games > 0 ? (p.totalProfit / p.games).toFixed(2) : 0
+    }))
+    .sort((a, b) => b.totalProfit - a.totalProfit);
+};
+
+const getOverallLeaderboard = () => {
+  const playerStats = {};
+
+  gameHistory.forEach(game => {
+    game.players.forEach(player => {
+      if (!playerStats[player.name]) {
+        playerStats[player.name] = {
+          name: player.name,
+          games: 0,
+          wins: 0,
+          totalProfit: 0,
+          biggestWin: 0
+        };
+      }
+
+      const result = player.netResultCents / 100;
+      playerStats[player.name].games++;
+      playerStats[player.name].totalProfit += result;
+      
+      if (result > 0) {
+        playerStats[player.name].wins++;
+        playerStats[player.name].biggestWin = Math.max(playerStats[player.name].biggestWin, result);
+      }
+    });
+  });
+
+  return Object.values(playerStats)
+    .map(p => ({
+      ...p,
+      winRate: p.games > 0 ? ((p.wins / p.games) * 100).toFixed(1) : 0,
+      avgProfit: p.games > 0 ? (p.totalProfit / p.games).toFixed(2) : 0
+    }))
+    .sort((a, b) => b.totalProfit - a.totalProfit);
+};
+
 
 // Settings functions
 const saveDisplayName = () => {
@@ -389,6 +468,7 @@ const updateQuickAmount = (index, value) => {
     setUnsubscribe(null);
     setGameNotes('');
     setSessionName('');
+    setSelectedGroupId(null);
 
   };
 
@@ -426,6 +506,7 @@ const updateQuickAmount = (index, value) => {
         hostId: player.id,
         hostName: playerName,
         sessionName: sessionName || null,
+        groupId: selectedGroupId || null, // Track which group this game belongs to
         players: [player],
         status: 'lobby'
       };
@@ -692,7 +773,7 @@ const updateQuickAmount = (index, value) => {
               <span className="text-lg tracking-wide">LOAD SAVED GROUP</span>
             </button>
           )}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <button onClick={() => setScreen('history')} className="bg-black/40 backdrop-blur-sm hover:bg-black/60 text-amber-300 border border-amber-500/30 py-4 px-4 rounded-lg flex flex-col items-center justify-center gap-1 transition font-semibold">
               <History size={20} />
               <span className="text-xs">History</span>
@@ -704,6 +785,10 @@ const updateQuickAmount = (index, value) => {
             <button onClick={() => setScreen('analytics')} className="bg-black/40 backdrop-blur-sm hover:bg-black/60 text-amber-300 border border-amber-500/30 py-4 px-4 rounded-lg flex flex-col items-center justify-center gap-1 transition font-semibold">
               <TrendingUp size={20} />
               <span className="text-xs">Analytics</span>
+            </button>
+            <button onClick={() => setScreen('leaderboards')} className="bg-black/40 backdrop-blur-sm hover:bg-black/60 text-amber-300 border border-amber-500/30 py-4 px-4 rounded-lg flex flex-col items-center justify-center gap-1 transition font-semibold">
+              <span className="text-xl">🏆</span>
+              <span className="text-xs">Leaders</span>
             </button>
           </div>
         </div>
@@ -1451,6 +1536,98 @@ if (screen === 'analytics') {
             )}
           </>
         )}
+      </div>
+    </div>
+  );
+}
+
+if (screen === 'leaderboards') {
+  const overallLeaderboard = getOverallLeaderboard();
+  const [selectedLeaderboardGroup, setSelectedLeaderboardGroup] = useState(null);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 text-white p-6">
+      <div className="max-w-4xl mx-auto pt-8">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-3xl font-bold text-amber-400">🏆 LEADERBOARDS</h2>
+          <button onClick={() => setScreen('home')} className="bg-black/40 text-amber-300 border border-amber-500/30 px-4 py-2 rounded-lg">
+            Back
+          </button>
+        </div>
+
+        {/* Group Selector */}
+        {savedGroups.length > 0 && (
+          <div className="mb-6">
+            <label className="block text-sm text-amber-300 mb-2 font-semibold">VIEW LEADERBOARD</label>
+            <select
+              value={selectedLeaderboardGroup || ''}
+              onChange={(e) => setSelectedLeaderboardGroup(e.target.value || null)}
+              className="w-full bg-black/40 text-white px-4 py-3 rounded-lg border border-amber-500/30"
+            >
+              <option value="">Overall (All Players)</option>
+              {savedGroups.map(group => (
+                <option key={group.id} value={group.id}>{group.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Leaderboard */}
+        <div className="bg-black/40 rounded-xl p-6 border-2 border-amber-500/30">
+          {(() => {
+            const leaderboard = selectedLeaderboardGroup 
+              ? getGroupLeaderboard(selectedLeaderboardGroup)
+              : overallLeaderboard;
+
+            if (leaderboard.length === 0) {
+              return (
+                <div className="text-center py-12">
+                  <p className="text-amber-200/70">No games played yet{selectedLeaderboardGroup ? ' with this group' : ''}!</p>
+                </div>
+              );
+            }
+
+            return (
+              <div className="space-y-3">
+                {leaderboard.map((player, idx) => (
+                  <div key={player.name} className="bg-green-800/50 rounded-lg p-4 flex items-center gap-4">
+                    {/* Rank Badge */}
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl ${
+                      idx === 0 ? 'bg-yellow-500 text-black' :
+                      idx === 1 ? 'bg-gray-400 text-black' :
+                      idx === 2 ? 'bg-amber-700 text-white' :
+                      'bg-gray-600 text-white'
+                    }`}>
+                      {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : idx + 1}
+                    </div>
+
+                    {/* Player Info */}
+                    <div className="flex-1">
+                      <div className="font-bold text-lg text-white">{player.name}</div>
+                      <div className="flex gap-4 text-xs text-amber-200/70">
+                        <span>{player.games} games</span>
+                        <span>{player.winRate}% win rate</span>
+                        {player.avgProfit && <span>Avg: ${player.avgProfit}</span>}
+                      </div>
+                    </div>
+
+                    {/* Total Profit */}
+                    <div className="text-right">
+                      <div className={`text-2xl font-bold ${player.totalProfit >= 0 ? 'text-emerald-300' : 'text-red-400'}`}>
+                        {player.totalProfit >= 0 ? '+' : ''}${player.totalProfit.toFixed(2)}
+                      </div>
+                      {player.biggestWin > 0 && (
+                        <div className="text-xs text-emerald-300">
+                          Best: +${player.biggestWin.toFixed(2)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+        </div>
       </div>
     </div>
   );
