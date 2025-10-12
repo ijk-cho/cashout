@@ -462,7 +462,7 @@ const updateQuickAmount = (index, value) => {
 
         {/* Top Right Buttons */}
         <div className="absolute top-6 right-6 z-30 flex gap-3 items-center">
-          {showInstallButton && (
+          {(showInstallButton || true) && (
             <button
               onClick={handleInstallClick}
               className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold shadow-lg border-2 border-amber-400/50 flex items-center gap-2"
@@ -616,6 +616,19 @@ const updateQuickAmount = (index, value) => {
               <span className="text-lg tracking-wide">JOIN GAME</span>
             </button>
           </div>
+          <button
+            onClick={() => {
+              console.log('Prompt available:', deferredPrompt);
+              if (deferredPrompt) {
+                handleInstallClick();
+              } else {
+                alert('Install prompt not available. Try: 1) Use HTTPS/localhost 2) Clear site data 3) Use Chrome/Edge');
+              }
+            }}
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg"
+          >
+            Test Install (Dev Only)
+          </button>
           {savedGroups.length > 0 && (
             <button
               onClick={() => { setScreen('groups'); }}
