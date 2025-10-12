@@ -1543,7 +1543,6 @@ if (screen === 'analytics') {
 
 if (screen === 'leaderboards') {
   const overallLeaderboard = getOverallLeaderboard();
-  const [selectedLeaderboardGroup, setSelectedLeaderboardGroup] = useState(null);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 text-white p-6">
@@ -1555,78 +1554,51 @@ if (screen === 'leaderboards') {
           </button>
         </div>
 
-        {/* Group Selector */}
-        {savedGroups.length > 0 && (
-          <div className="mb-6">
-            <label className="block text-sm text-amber-300 mb-2 font-semibold">VIEW LEADERBOARD</label>
-            <select
-              value={selectedLeaderboardGroup || ''}
-              onChange={(e) => setSelectedLeaderboardGroup(e.target.value || null)}
-              className="w-full bg-black/40 text-white px-4 py-3 rounded-lg border border-amber-500/30"
-            >
-              <option value="">Overall (All Players)</option>
-              {savedGroups.map(group => (
-                <option key={group.id} value={group.id}>{group.name}</option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        {/* Leaderboard */}
+        {/* Overall Leaderboard */}
         <div className="bg-black/40 rounded-xl p-6 border-2 border-amber-500/30">
-          {(() => {
-            const leaderboard = selectedLeaderboardGroup 
-              ? getGroupLeaderboard(selectedLeaderboardGroup)
-              : overallLeaderboard;
+          {overallLeaderboard.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-amber-200/70">No games played yet!</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {overallLeaderboard.map((player, idx) => (
+                <div key={player.name} className="bg-green-800/50 rounded-lg p-4 flex items-center gap-4">
+                  {/* Rank Badge */}
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl ${
+                    idx === 0 ? 'bg-yellow-500 text-black' :
+                    idx === 1 ? 'bg-gray-400 text-black' :
+                    idx === 2 ? 'bg-amber-700 text-white' :
+                    'bg-gray-600 text-white'
+                  }`}>
+                    {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : idx + 1}
+                  </div>
 
-            if (leaderboard.length === 0) {
-              return (
-                <div className="text-center py-12">
-                  <p className="text-amber-200/70">No games played yet{selectedLeaderboardGroup ? ' with this group' : ''}!</p>
-                </div>
-              );
-            }
-
-            return (
-              <div className="space-y-3">
-                {leaderboard.map((player, idx) => (
-                  <div key={player.name} className="bg-green-800/50 rounded-lg p-4 flex items-center gap-4">
-                    {/* Rank Badge */}
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl ${
-                      idx === 0 ? 'bg-yellow-500 text-black' :
-                      idx === 1 ? 'bg-gray-400 text-black' :
-                      idx === 2 ? 'bg-amber-700 text-white' :
-                      'bg-gray-600 text-white'
-                    }`}>
-                      {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : idx + 1}
-                    </div>
-
-                    {/* Player Info */}
-                    <div className="flex-1">
-                      <div className="font-bold text-lg text-white">{player.name}</div>
-                      <div className="flex gap-4 text-xs text-amber-200/70">
-                        <span>{player.games} games</span>
-                        <span>{player.winRate}% win rate</span>
-                        {player.avgProfit && <span>Avg: ${player.avgProfit}</span>}
-                      </div>
-                    </div>
-
-                    {/* Total Profit */}
-                    <div className="text-right">
-                      <div className={`text-2xl font-bold ${player.totalProfit >= 0 ? 'text-emerald-300' : 'text-red-400'}`}>
-                        {player.totalProfit >= 0 ? '+' : ''}${player.totalProfit.toFixed(2)}
-                      </div>
-                      {player.biggestWin > 0 && (
-                        <div className="text-xs text-emerald-300">
-                          Best: +${player.biggestWin.toFixed(2)}
-                        </div>
-                      )}
+                  {/* Player Info */}
+                  <div className="flex-1">
+                    <div className="font-bold text-lg text-white">{player.name}</div>
+                    <div className="flex gap-4 text-xs text-amber-200/70">
+                      <span>{player.games} games</span>
+                      <span>{player.winRate}% win rate</span>
+                      {player.avgProfit && <span>Avg: ${player.avgProfit}</span>}
                     </div>
                   </div>
-                ))}
-              </div>
-            );
-          })()}
+
+                  {/* Total Profit */}
+                  <div className="text-right">
+                    <div className={`text-2xl font-bold ${player.totalProfit >= 0 ? 'text-emerald-300' : 'text-red-400'}`}>
+                      {player.totalProfit >= 0 ? '+' : ''}${player.totalProfit.toFixed(2)}
+                    </div>
+                    {player.biggestWin > 0 && (
+                      <div className="text-xs text-emerald-300">
+                        Best: +${player.biggestWin.toFixed(2)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
