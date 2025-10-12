@@ -976,7 +976,7 @@ const updateQuickAmount = (index, value) => {
                 className="flex-1 bg-poker-green border border-poker-gold/30 hover:border-poker-gold/50 text-poker-gold font-semibold py-2 rounded-card transition flex items-center justify-center gap-2"
               >
                 {copied ? <Check size={16} /> : <Copy size={16} />}
-                {copied ? 'Copied!' : 'Copy'}
+                {copied ? 'Copied!' : 'Copy Link'}
               </button>
             </div>
           </div>
