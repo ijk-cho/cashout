@@ -1,12 +1,10 @@
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const STATIC_CACHE = `cashout-static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `cashout-dynamic-${CACHE_VERSION}`;
 const OFFLINE_PAGE = '/offline.html';
 
 // Assets to cache on install
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
   '/offline.html',
   '/manifest.json',
   '/icon-192.png',
@@ -64,6 +62,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Handle HTML files with network-first strategy (always get latest version)
+  if (request.mode === 'navigate' || request.destination === 'document' || url.pathname.endsWith('.html')) {
+    event.respondWith(networkFirstStrategy(request));
+    return;
+  }
+
   // Handle Firebase/API requests with network-first strategy
   if (url.href.includes('firebaseio.com') ||
       url.href.includes('googleapis.com') ||
@@ -73,7 +77,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Handle static assets with cache-first strategy
+  // Handle static assets (JS, CSS, images) with cache-first strategy
   event.respondWith(cacheFirstStrategy(request));
 });
 
