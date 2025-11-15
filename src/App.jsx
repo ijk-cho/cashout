@@ -3,6 +3,8 @@ import { auth } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import Auth from './Auth';
 import ProfilePage from './ProfilePage';
+import InstallPrompt from './InstallPrompt';
+import UpdateNotification from './UpdateNotification';
 import { DollarSign, Users, Plus, Share2, Copy, Check, TrendingUp, History, ArrowRight } from 'lucide-react';
 import { createGame, getGameByCode, updateGame, subscribeToGame, removePlayer, updatePaymentStatus } from './gameService';
 import { soundManager } from './sounds';
@@ -715,6 +717,9 @@ const updateQuickAmount = (index, value) => {
   if (screen === 'home') {
     const stats = calculateStats();
     return (
+      <>
+      <InstallPrompt />
+      <UpdateNotification />
       <div className="min-h-screen bg-poker-green relative overflow-hidden">
         {/* Felt texture overlay */}
         <div className="absolute inset-0 opacity-5 felt-texture"></div>
@@ -915,6 +920,7 @@ const updateQuickAmount = (index, value) => {
           </div>
         </div>
       </div>
+      </>
     );
   }
 
@@ -2255,7 +2261,7 @@ if (screen === 'groups') {
   );
 }
 
-return null;
+return <InstallPrompt />;
 };
 
 export default PokerSettleApp;

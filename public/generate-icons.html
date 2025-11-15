@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generate CashOut Icons</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #064e3b;
+      margin-bottom: 20px;
+    }
+    .preview {
+      display: flex;
+      gap: 30px;
+      margin: 30px 0;
+      flex-wrap: wrap;
+    }
+    .icon-preview {
+      text-align: center;
+    }
+    canvas {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    button {
+      background: #dc2626;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 10px 10px 10px 0;
+    }
+    button:hover {
+      background: #b91c1c;
+    }
+    .success {
+      color: #059669;
+      font-weight: 600;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎰 CashOut App Icons Generator</h1>
+    <p>Click the buttons below to download the app icons.</p>
+
+    <div class="preview">
+      <div class="icon-preview">
+        <h3>192x192</h3>
+        <canvas id="canvas192" width="192" height="192"></canvas>
+        <br>
+        <button onclick="downloadIcon(192)">Download 192x192</button>
+      </div>
+      <div class="icon-preview">
+        <h3>512x512</h3>
+        <canvas id="canvas512" width="512" height="512"></canvas>
+        <br>
+        <button onclick="downloadIcon(512)">Download 512x512</button>
+      </div>
+    </div>
+
+    <div id="message"></div>
+
+    <hr style="margin: 30px 0;">
+    <p><strong>Instructions:</strong></p>
+    <ol>
+      <li>Download both icons using the buttons above</li>
+      <li>Save them as <code>icon-192.png</code> and <code>icon-512.png</code></li>
+      <li>Place them in the <code>/public</code> folder of your project</li>
+      <li>Delete this HTML file</li>
+    </ol>
+  </div>
+
+  <script>
+    function drawIcon(canvas) {
+      const ctx = canvas.getContext('2d');
+      const size = canvas.width;
+
+      // Background with rounded corners
+      const cornerRadius = size * 0.15;
+      ctx.fillStyle = '#064e3b';
+      ctx.beginPath();
+      ctx.roundRect(0, 0, size, size, cornerRadius);
+      ctx.fill();
+
+      // Outer poker chip ring
+      const centerX = size / 2;
+      const centerY = size / 2;
+      const chipRadius = size * 0.35;
+
+      ctx.strokeStyle = '#dc2626';
+      ctx.lineWidth = size * 0.04;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, chipRadius, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Chip segments (white marks)
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = size * 0.02;
+      ctx.lineCap = 'round';
+
+      [0, 45, 90, 135, 180, 225, 270, 315].forEach(angle => {
+        const rad = (angle * Math.PI) / 180;
+        const r1 = chipRadius;
+        const r2 = chipRadius - size * 0.04;
+
+        ctx.beginPath();
+        ctx.moveTo(
+          centerX + r1 * Math.cos(rad),
+          centerY + r1 * Math.sin(rad)
+        );
+        ctx.lineTo(
+          centerX + r2 * Math.cos(rad),
+          centerY + r2 * Math.sin(rad)
+        );
+        ctx.stroke();
+      });
+
+      // Inner circle
+      const innerRadius = size * 0.25;
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, innerRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Dollar sign
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `bold ${size * 0.35}px Arial, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('$', centerX, centerY);
+    }
+
+    function downloadIcon(size) {
+      const canvas = document.getElementById(`canvas${size}`);
+      const link = document.createElement('a');
+      link.download = `icon-${size}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+
+      document.getElementById('message').innerHTML =
+        `<p class="success">✅ Downloaded icon-${size}.png! Save it to your /public folder.</p>`;
+    }
+
+    // Draw icons on load
+    window.addEventListener('load', () => {
+      drawIcon(document.getElementById('canvas192'));
+      drawIcon(document.getElementById('canvas512'));
+    });
+  </script>
+</body>
+</html>
