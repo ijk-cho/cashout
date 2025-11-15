@@ -717,10 +717,7 @@ const updateQuickAmount = (index, value) => {
     return (
       <div className="min-h-screen bg-poker-green relative overflow-hidden">
         {/* Felt texture overlay */}
-        <div className="absolute inset-0 opacity-5" style={{
-          backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,215,0,0.15) 1px, transparent 0)',
-          backgroundSize: '40px 40px'
-        }}></div>
+        <div className="absolute inset-0 opacity-5 felt-texture"></div>
         
         {/* Decorative elements */}
         <div className="absolute top-10 right-10 text-8xl opacity-10 text-poker-gold">♠</div>
@@ -838,7 +835,7 @@ const updateQuickAmount = (index, value) => {
             <div className="inline-flex items-center justify-center w-24 h-24 rounded-full mb-4 bg-gradient-to-br from-poker-burgundy to-poker-burgundy-dark border-4 border-poker-gold shadow-2xl">
               <DollarSign size={40} className="text-poker-gold" strokeWidth={3} />
             </div>
-            <h1 className="text-6xl font-serif font-bold mb-2 text-poker-gold" style={{textShadow: '3px 3px 6px rgba(0,0,0,0.5)'}}>
+            <h1 className="text-6xl font-serif font-bold mb-2 text-poker-gold text-shadow-glow-lg">
               CashOut
             </h1>
             <div className="inline-block bg-poker-gold text-poker-green px-6 py-2 rounded-full text-sm font-bold tracking-wide shadow-lg">
@@ -855,7 +852,7 @@ const updateQuickAmount = (index, value) => {
                   <div className="text-xs text-poker-grey uppercase tracking-wide font-semibold">Games</div>
                 </div>
                 <div className="bg-poker-green/50 rounded-card p-3 border border-poker-gold/20">
-                  <div className={`text-3xl font-mono font-bold ${parseFloat(stats.totalResult) >= 0 ? 'text-emerald-300' : 'text-poker-burgundy'}`}>
+                  <div className={`text-3xl font-mono font-bold ${parseFloat(stats.totalResult) >= 0 ? 'text-poker-gold-light' : 'text-poker-burgundy-light'}`}>
                     ${stats.totalResult}
                   </div>
                   <div className="text-xs text-poker-grey uppercase tracking-wide font-semibold">Net</div>
@@ -924,10 +921,7 @@ const updateQuickAmount = (index, value) => {
   if (screen === 'host') {
     return (
       <div className="min-h-screen bg-poker-green text-poker-cream p-6 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5" style={{
-          backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,215,0,0.15) 1px, transparent 0)',
-          backgroundSize: '40px 40px'
-        }}></div>
+        <div className="absolute inset-0 opacity-5 felt-texture"></div>
         
         <div className="max-w-md mx-auto pt-8 relative z-10">
           <h2 className="text-3xl font-serif font-bold mb-6 text-poker-gold">Host Game</h2>
@@ -970,10 +964,7 @@ const updateQuickAmount = (index, value) => {
   if (screen === 'join') {
     return (
       <div className="min-h-screen bg-poker-green text-poker-cream p-6 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5" style={{
-          backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,215,0,0.15) 1px, transparent 0)',
-          backgroundSize: '40px 40px'
-        }}></div>
+        <div className="absolute inset-0 opacity-5 felt-texture"></div>
         
         <div className="max-w-md mx-auto pt-8 relative z-10">
           <h2 className="text-3xl font-serif font-bold mb-6 text-poker-gold">Join Game</h2>
@@ -1025,10 +1016,7 @@ const updateQuickAmount = (index, value) => {
   if (screen === 'lobby') {
     return (
       <div className="min-h-screen bg-poker-green text-poker-cream p-6 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5" style={{
-          backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,215,0,0.15) 1px, transparent 0)',
-          backgroundSize: '40px 40px'
-        }}></div>
+        <div className="absolute inset-0 opacity-5 felt-texture"></div>
         
         <div className="max-w-md mx-auto pt-8 relative z-10">
           <h2 className="text-3xl font-serif font-bold mb-6 text-poker-gold">Game Lobby</h2>
@@ -1139,10 +1127,7 @@ const updateQuickAmount = (index, value) => {
   if (screen === 'game') {
     return (
       <div className="min-h-screen bg-poker-green text-poker-cream p-6 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5" style={{
-          backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,215,0,0.15) 1px, transparent 0)',
-          backgroundSize: '40px 40px'
-        }}></div>
+        <div className="absolute inset-0 opacity-5 felt-texture"></div>
         
         <div className="max-w-4xl mx-auto pt-8 relative z-10">
           <div className="flex items-center justify-between mb-6">
@@ -1418,10 +1403,7 @@ const updateQuickAmount = (index, value) => {
   if (screen === 'settlement') {
     return (
       <div className="min-h-screen bg-poker-green text-poker-cream p-6 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5" style={{
-          backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,215,0,0.15) 1px, transparent 0)',
-          backgroundSize: '40px 40px'
-        }}></div>
+        <div className="absolute inset-0 opacity-5 felt-texture"></div>
         
         <div className="max-w-4xl mx-auto pt-8 relative z-10">
           <h2 className="text-3xl font-serif font-bold mb-6 text-poker-gold text-center">Game Complete!</h2>
@@ -1512,10 +1494,7 @@ const updateQuickAmount = (index, value) => {
 if (screen === 'history') {
   return (
     <div className="min-h-screen bg-poker-green text-poker-cream p-6 relative overflow-hidden">
-      <div className="absolute inset-0 opacity-5" style={{
-        backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,215,0,0.15) 1px, transparent 0)',
-        backgroundSize: '40px 40px'
-      }}></div>
+      <div className="absolute inset-0 opacity-5 felt-texture"></div>
       
       <div className="max-w-4xl mx-auto pt-8 relative z-10">
         <div className="flex items-center justify-between mb-6">
@@ -1565,10 +1544,7 @@ if (screen === 'stats') {
   
   return (
     <div className="min-h-screen bg-poker-green text-poker-cream p-6 relative overflow-hidden">
-      <div className="absolute inset-0 opacity-5" style={{
-        backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,215,0,0.15) 1px, transparent 0)',
-        backgroundSize: '40px 40px'
-      }}></div>
+      <div className="absolute inset-0 opacity-5 felt-texture"></div>
       
       <div className="max-w-4xl mx-auto pt-8 relative z-10">
         <div className="flex items-center justify-between mb-6">
@@ -1648,10 +1624,7 @@ if (screen === 'analytics') {
 
   return (
     <div className="min-h-screen bg-poker-green text-poker-cream p-6 relative overflow-hidden">
-      <div className="absolute inset-0 opacity-5" style={{
-        backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,215,0,0.15) 1px, transparent 0)',
-        backgroundSize: '40px 40px'
-      }}></div>
+      <div className="absolute inset-0 opacity-5 felt-texture"></div>
       
       <div className="max-w-4xl mx-auto pt-8 relative z-10">
         <div className="flex items-center justify-between mb-6">
@@ -1794,10 +1767,7 @@ if (screen === 'leaderboards') {
 
   return (
     <div className="min-h-screen bg-poker-green text-poker-cream p-6 relative overflow-hidden">
-      <div className="absolute inset-0 opacity-5" style={{
-        backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,215,0,0.15) 1px, transparent 0)',
-        backgroundSize: '40px 40px'
-      }}></div>
+      <div className="absolute inset-0 opacity-5 felt-texture"></div>
       
       <div className="max-w-4xl mx-auto pt-8 relative z-10">
         <div className="flex items-center justify-between mb-6">
@@ -2235,10 +2205,7 @@ if (screen === 'settings') {
 if (screen === 'groups') {
   return (
     <div className="min-h-screen bg-poker-green text-poker-cream p-6 relative overflow-hidden">
-      <div className="absolute inset-0 opacity-5" style={{
-        backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,215,0,0.15) 1px, transparent 0)',
-        backgroundSize: '40px 40px'
-      }}></div>
+      <div className="absolute inset-0 opacity-5 felt-texture"></div>
       
       <div className="max-w-4xl mx-auto pt-8 relative z-10">
         <div className="flex items-center justify-between mb-6">
