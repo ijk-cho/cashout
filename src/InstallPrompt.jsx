@@ -98,7 +98,7 @@ const InstallPrompt = () => {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 p-4 animate-slide-up">
-      <div className="max-w-md mx-auto bg-gradient-to-br from-emerald-900 to-emerald-800 rounded-2xl shadow-2xl border border-emerald-700 overflow-hidden">
+      <div className="max-w-md mx-auto bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl shadow-2xl border border-white/10">
         {/* Close button */}
         <button
           onClick={handleDismiss}
@@ -111,18 +111,18 @@ const InstallPrompt = () => {
         <div className="p-6">
           {/* Icon */}
           <div className="flex items-start gap-4">
-            <div className="flex-shrink-0 w-16 h-16 bg-red-600 rounded-2xl flex items-center justify-center shadow-lg">
-              <span className="text-3xl">$</span>
+            <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-[#D4AF37] to-[#C9A942] rounded-2xl flex items-center justify-center shadow-[0_4px_16px_rgba(212,175,55,0.3)]">
+              <span className="text-3xl text-[#0A0E14] font-bold">$</span>
             </div>
 
             <div className="flex-1 min-w-0">
               {/* Title */}
-              <h3 className="text-lg font-bold text-white mb-1">
+              <h3 className="text-lg font-bold text-[#F8FAFC] mb-1">
                 Install CashOut App
               </h3>
 
               {/* Description */}
-              <p className="text-sm text-emerald-100 mb-4">
+              <p className="text-sm text-[#CBD5E1] mb-4">
                 Add to your home screen for quick access and offline support. Track poker games anytime!
               </p>
 
@@ -130,31 +130,20 @@ const InstallPrompt = () => {
               <div className="flex gap-2">
                 <button
                   onClick={handleInstallClick}
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg"
+                  className="flex-1 bg-gradient-to-r from-[#D4AF37] to-[#C9A942] hover:shadow-[0_6px_24px_rgba(212,175,55,0.4)] text-[#0A0E14] font-semibold py-2.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
                 >
                   <Download size={18} />
                   <span>Install</span>
                 </button>
                 <button
                   onClick={handleDismiss}
-                  className="px-4 py-2.5 text-emerald-100 hover:text-white hover:bg-white/10 rounded-lg transition-colors font-medium"
+                  className="px-4 py-2.5 text-[#CBD5E1] hover:text-[#F8FAFC] hover:bg-white/10 rounded-xl transition-all duration-200 font-medium"
                 >
                   Later
                 </button>
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Progress indicator */}
-        <div className="h-1 bg-emerald-950/50">
-          <div
-            className="h-full bg-gradient-to-r from-red-500 to-red-600"
-            style={{
-              width: '100%',
-              animation: 'progress 7s linear forwards'
-            }}
-          />
         </div>
       </div>
 
@@ -167,15 +156,6 @@ const InstallPrompt = () => {
           to {
             transform: translateY(0);
             opacity: 1;
-          }
-        }
-
-        @keyframes progress {
-          from {
-            width: 100%;
-          }
-          to {
-            width: 0%;
           }
         }
 

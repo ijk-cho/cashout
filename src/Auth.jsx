@@ -57,29 +57,34 @@ const Auth = ({ onAuthSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen bg-poker-green text-poker-cream p-6 relative overflow-hidden flex items-center justify-center">
-      {/* Felt texture overlay */}
-      <div className="absolute inset-0 opacity-5 felt-texture"></div>
-      
+    <div className="min-h-screen bg-[#0A0E14] text-[#F8FAFC] p-6 relative overflow-hidden flex items-center justify-center">
+      {/* Subtle Background Pattern */}
+      <div
+        className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D4AF37' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+        }}
+      />
+
       {/* Decorative elements */}
-      <div className="absolute top-10 right-10 text-8xl opacity-10 text-poker-gold">♠</div>
-      <div className="absolute bottom-20 left-10 text-8xl opacity-10 text-poker-gold">♥</div>
-      
+      <div className="absolute top-0 right-0 w-96 h-96 bg-[#D4AF37] opacity-5 blur-[120px] rounded-full" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#D4AF37] opacity-5 blur-[120px] rounded-full" />
+
       <div className="max-w-md w-full relative z-10">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full mb-4 bg-gradient-to-br from-poker-burgundy to-poker-burgundy-dark border-4 border-poker-gold shadow-2xl">
-            <DollarSign size={40} className="text-poker-gold" strokeWidth={3} />
+          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full mb-4 bg-gradient-to-br from-[#D4AF37] to-[#C9A942] shadow-[0_8px_32px_rgba(212,175,55,0.3)]">
+            <DollarSign size={40} className="text-[#0A0E14]" strokeWidth={3} />
           </div>
-          <h1 className="text-5xl font-serif font-bold mb-2 text-poker-gold tracking-tight text-shadow-glow">
+          <h1 className="text-5xl font-serif font-bold mb-2 text-[#D4AF37] tracking-tight">
             CashOut
           </h1>
-          <p className="text-poker-grey text-sm">Track games. Settle debts. Keep it clean.</p>
+          <p className="text-[#CBD5E1] text-sm">Track games. Settle debts. Keep it clean.</p>
         </div>
 
         {/* Auth Card */}
-        <div className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-6 mb-4 border-2 border-poker-gold/30 shadow-2xl">
-          <h2 className="text-2xl font-serif font-bold text-poker-gold text-center mb-6">
+        <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl p-6 mb-4 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+          <h2 className="text-2xl font-serif font-bold text-[#D4AF37] text-center mb-6">
             {isSignUp ? 'Create Account' : 'Welcome Back'}
           </h2>
 
@@ -87,7 +92,7 @@ const Auth = ({ onAuthSuccess }) => {
           <button
             onClick={signInWithGoogle}
             disabled={loading}
-            className="w-full bg-poker-cream hover:bg-poker-grey text-poker-green font-semibold py-3 px-6 rounded-card-lg mb-4 flex items-center justify-center gap-3 transition shadow-lg disabled:opacity-50 border-2 border-poker-gold/20"
+            className="w-full bg-white hover:bg-gray-100 text-[#0A0E14] font-semibold py-3 px-6 rounded-xl mb-4 flex items-center justify-center gap-3 transition-all duration-200 shadow-lg disabled:opacity-50 border border-white/20"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -101,10 +106,10 @@ const Auth = ({ onAuthSuccess }) => {
           {/* Divider */}
           <div className="relative text-center mb-4">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-poker-gold/30"></div>
+              <div className="w-full border-t border-white/10"></div>
             </div>
             <div className="relative">
-              <span className="bg-poker-green-light px-4 text-sm text-poker-grey">Or</span>
+              <span className="bg-[#252B3D] px-4 text-sm text-[#CBD5E1]">Or</span>
             </div>
           </div>
 
@@ -116,7 +121,7 @@ const Auth = ({ onAuthSuccess }) => {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Email"
               required
-              className="w-full bg-poker-green text-poker-cream px-4 py-3 rounded-card border border-poker-gold/20 focus:outline-none focus:ring-2 focus:ring-poker-gold placeholder:text-poker-grey"
+              className="w-full bg-[#12161F] text-[#F8FAFC] px-4 py-3 rounded-xl border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50 focus:border-[#D4AF37]/50 placeholder:text-[#64748B] transition-all duration-200"
             />
             <input
               type="password"
@@ -124,13 +129,13 @@ const Auth = ({ onAuthSuccess }) => {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
               required
-              className="w-full bg-poker-green text-poker-cream px-4 py-3 rounded-card border border-poker-gold/20 focus:outline-none focus:ring-2 focus:ring-poker-gold placeholder:text-poker-grey"
+              className="w-full bg-[#12161F] text-[#F8FAFC] px-4 py-3 rounded-xl border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50 focus:border-[#D4AF37]/50 placeholder:text-[#64748B] transition-all duration-200"
             />
-            {error && <p className="text-poker-burgundy text-sm">{error}</p>}
+            {error && <p className="text-red-400 text-sm">{error}</p>}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-poker-burgundy to-poker-burgundy-dark hover:from-poker-burgundy-dark hover:to-poker-burgundy text-poker-cream font-bold py-3 px-6 rounded-card-lg transition shadow-xl border-2 border-poker-gold/50 disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-[#D4AF37] to-[#C9A942] hover:shadow-[0_6px_24px_rgba(212,175,55,0.4)] text-[#0A0E14] font-bold py-3 px-6 rounded-xl transition-all duration-200 shadow-[0_4px_16px_rgba(212,175,55,0.3)] disabled:opacity-50"
             >
               {loading ? 'Please wait...' : (isSignUp ? 'Sign Up' : 'Sign In')}
             </button>
@@ -139,7 +144,7 @@ const Auth = ({ onAuthSuccess }) => {
           {/* Toggle Sign Up/In */}
           <button
             onClick={() => setIsSignUp(!isSignUp)}
-            className="w-full text-poker-gold text-sm mt-3 hover:text-poker-gold-light transition"
+            className="w-full text-[#D4AF37] text-sm mt-3 hover:text-[#C9A942] transition-colors duration-200"
           >
             {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
           </button>
@@ -148,7 +153,7 @@ const Auth = ({ onAuthSuccess }) => {
         {/* Guest Mode */}
         <button
           onClick={continueAsGuest}
-          className="w-full bg-poker-green-light/80 backdrop-blur-sm hover:bg-poker-green-light text-poker-gold border-2 border-poker-gold/30 hover:border-poker-gold/50 py-3 rounded-card-lg transition font-semibold shadow-lg"
+          className="w-full bg-[#1E2433] hover:bg-[#252B3D] text-[#D4AF37] border border-white/10 hover:border-[#D4AF37]/50 py-3 rounded-xl transition-all duration-200 font-semibold shadow-lg"
         >
           Continue as Guest (History not saved)
         </button>

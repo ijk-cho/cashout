@@ -4,8 +4,8 @@
   "description": "Track poker games, manage buy-ins, and settle up with friends",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#064e3b",
-  "theme_color": "#dc2626",
+  "background_color": "#0A0E14",
+  "theme_color": "#D4AF37",
   "orientation": "portrait",
   "icons": [
     {
