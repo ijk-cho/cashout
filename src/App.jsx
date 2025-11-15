@@ -1530,7 +1530,7 @@ const updateQuickAmount = (index, value) => {
               {players.sort((a, b) => b.netResultCents - a.netResultCents).map(p => (
                 <div key={p.id} className="flex items-center justify-between bg-[#12161F] p-3 rounded-xl border border-white/10">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-[#EF4444] to-[#DC2626] rounded-full flex items-center justify-center font-bold text-[#D4AF37] border-2 border-poker-gold/50">
+                    <div className="w-10 h-10 bg-gradient-to-br from-[#EF4444] to-[#DC2626] rounded-full flex items-center justify-center font-bold text-[#D4AF37] border-2 border-[#D4AF37]/50">
                       {p.name[0].toUpperCase()}
                     </div>
                     <span className="font-semibold text-[#F8FAFC]">{p.name}</span>
@@ -1566,13 +1566,13 @@ const updateQuickAmount = (index, value) => {
                           href={generateVenmoLink(s.toVenmo, s.amountCents)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex-1 bg-poker-gold hover:bg-poker-gold-light text-poker-green font-semibold py-2 rounded-xl transition text-center"
+                          className="flex-1 bg-gradient-to-r from-[#D4AF37] to-[#C9A942] hover:shadow-[0_6px_24px_rgba(212,175,55,0.4)] text-[#0A0E14] font-semibold py-2 rounded-xl transition-all duration-200 text-center"
                         >
                           Pay via Venmo
                         </a>
                         <button
                           onClick={() => markPaid(idx)}
-                          className={`flex-1 ${s.paid ? 'bg-[#10B981]' : 'bg-poker-green border border-poker-gold/30'} hover:opacity-80 text-[#F8FAFC] font-semibold py-2 rounded-xl transition`}
+                          className={`flex-1 ${s.paid ? 'bg-[#10B981]' : 'bg-[#1E2433] border border-white/10'} hover:opacity-80 text-[#F8FAFC] font-semibold py-2 rounded-xl transition-all duration-200`}
                         >
                           {s.paid ? '✓ Paid' : 'Mark Paid'}
                         </button>
@@ -1597,7 +1597,7 @@ const updateQuickAmount = (index, value) => {
 
           <button 
             onClick={resetApp} 
-            className="w-full bg-gradient-to-r from-[#EF4444] to-[#DC2626] hover:from-poker-burgundy-dark hover:to-poker-burgundy text-[#F8FAFC] font-bold py-4 rounded-2xl border-2 border-poker-gold/50 transition shadow-xl"
+            className="w-full bg-gradient-to-r from-[#EF4444] to-[#DC2626] hover:shadow-[0_6px_24px_rgba(239,68,68,0.4)] text-[#F8FAFC] font-bold py-4 rounded-2xl border-2 border-[#D4AF37]/50 transition-all duration-200 shadow-xl"
           >
             Done
           </button>
@@ -1614,13 +1614,13 @@ if (screen === 'history') {
       <div className="max-w-4xl mx-auto pt-8 relative z-10">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-3xl font-serif font-bold text-[#D4AF37]">Game History</h2>
-          <button onClick={() => setScreen('home')} className="bg-poker-green-light text-[#D4AF37] border border-poker-gold/30 px-4 py-2 rounded-xl hover:border-white/20 transition">
+          <button onClick={() => setScreen('home')} className="bg-[#1E2433] hover:bg-[#252B3D] text-[#D4AF37] border border-white/10 hover:border-[#D4AF37]/50 px-4 py-2 rounded-xl transition-all duration-200">
             Back
           </button>
         </div>
 
         {gameHistory.length === 0 ? (
-          <div className="text-center py-12 bg-poker-green-light/80 rounded-2xl border border-white/10">
+          <div className="text-center py-12 bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl border border-white/10">
             <History size={48} className="mx-auto mb-4 text-[#D4AF37]/50" />
             <p className="text-[#64748B]">No games yet. Start playing!</p>
           </div>
@@ -1641,7 +1641,7 @@ if (screen === 'history') {
                   )}
                 </div>
                 <div className="text-xs text-[#D4AF37]/60 font-mono">Code: {g.code}</div>
-                {g.notes && <div className="text-sm text-[#F8FAFC]/80 mt-2 italic border-t border-poker-gold/20 pt-2">"{g.notes}"</div>}
+                {g.notes && <div className="text-sm text-[#F8FAFC]/80 mt-2 italic border-t border-[#D4AF37]/20 pt-2">"{g.notes}"</div>}
               </div>
             ))}
           </div>
@@ -1664,13 +1664,13 @@ if (screen === 'stats') {
       <div className="max-w-4xl mx-auto pt-8 relative z-10">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-3xl font-serif font-bold text-[#D4AF37]">Your Stats</h2>
-          <button onClick={() => setScreen('home')} className="bg-poker-green-light text-[#D4AF37] border border-poker-gold/30 px-4 py-2 rounded-xl hover:border-white/20 transition">
+          <button onClick={() => setScreen('home')} className="bg-[#1E2433] hover:bg-[#252B3D] text-[#D4AF37] border border-white/10 hover:border-[#D4AF37]/50 px-4 py-2 rounded-xl transition-all duration-200">
             Back
           </button>
         </div>
 
         {myGames.length === 0 ? (
-          <div className="text-center py-12 bg-poker-green-light/80 rounded-2xl border border-white/10">
+          <div className="text-center py-12 bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl border border-white/10">
             <TrendingUp size={48} className="mx-auto mb-4 text-[#D4AF37]/50" />
             <p className="text-[#64748B]">Play some games to see your stats!</p>
           </div>
@@ -1744,24 +1744,24 @@ if (screen === 'analytics') {
       <div className="max-w-4xl mx-auto pt-8 relative z-10">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-3xl font-serif font-bold text-[#D4AF37]">Analytics</h2>
-          <button onClick={() => setScreen('home')} className="bg-poker-green-light text-[#D4AF37] border border-poker-gold/30 px-4 py-2 rounded-xl hover:border-white/20 transition">
+          <button onClick={() => setScreen('home')} className="bg-[#1E2433] hover:bg-[#252B3D] text-[#D4AF37] border border-white/10 hover:border-[#D4AF37]/50 px-4 py-2 rounded-xl transition-all duration-200">
             Back
           </button>
         </div>
 
         {myGames.length === 0 ? (
-          <div className="text-center py-12 bg-poker-green-light/80 rounded-2xl border border-white/10">
+          <div className="text-center py-12 bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl border border-white/10">
             <TrendingUp size={48} className="mx-auto mb-4 text-[#D4AF37]/50" />
             <p className="text-[#64748B]">Play some games to see analytics!</p>
           </div>
         ) : (
           <>
             {/* Tab Navigation */}
-            <div className="flex gap-2 mb-6 bg-poker-green-light/80 rounded-xl p-1 border border-poker-gold/30">
+            <div className="flex gap-2 mb-6 bg-[#12161F] rounded-xl p-1 border border-white/10">
               <button
                 onClick={() => setAnalyticsView('overview')}
                 className={`flex-1 py-2 rounded-xl transition font-semibold ${
-                  analyticsView === 'overview' ? 'bg-poker-gold text-poker-green' : 'text-[#D4AF37] hover:text-[#D4AF37]-light'
+                  analyticsView === 'overview' ? 'bg-gradient-to-r from-[#D4AF37] to-[#C9A942] text-[#0A0E14]' : 'text-[#CBD5E1] hover:text-[#F8FAFC]'
                 }`}
               >
                 Overview
@@ -1769,7 +1769,7 @@ if (screen === 'analytics') {
               <button
                 onClick={() => setAnalyticsView('trends')}
                 className={`flex-1 py-2 rounded-xl transition font-semibold ${
-                  analyticsView === 'trends' ? 'bg-poker-gold text-poker-green' : 'text-[#D4AF37] hover:text-[#D4AF37]-light'
+                  analyticsView === 'trends' ? 'bg-gradient-to-r from-[#D4AF37] to-[#C9A942] text-[#0A0E14]' : 'text-[#CBD5E1] hover:text-[#F8FAFC]'
                 }`}
               >
                 Trends
@@ -1777,7 +1777,7 @@ if (screen === 'analytics') {
               <button
                 onClick={() => setAnalyticsView('players')}
                 className={`flex-1 py-2 rounded-xl transition font-semibold ${
-                  analyticsView === 'players' ? 'bg-poker-gold text-poker-green' : 'text-[#D4AF37] hover:text-[#D4AF37]-light'
+                  analyticsView === 'players' ? 'bg-gradient-to-r from-[#D4AF37] to-[#C9A942] text-[#0A0E14]' : 'text-[#CBD5E1] hover:text-[#F8FAFC]'
                 }`}
               >
                 Players
@@ -1816,9 +1816,9 @@ if (screen === 'analytics') {
                       <div key={stat.day} className="flex items-center justify-between bg-[#12161F] rounded-xl p-3 border border-white/10">
                         <div className="flex items-center gap-3">
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
-                            idx === 0 ? 'bg-poker-gold text-poker-green' : 
-                            idx === 1 ? 'bg-poker-grey text-poker-green' : 
-                            idx === 2 ? 'bg-amber-700 text-white' : 'bg-gray-600 text-white'
+                            idx === 0 ? 'bg-gradient-to-br from-[#D4AF37] to-[#C9A942] text-[#0A0E14]' :
+                            idx === 1 ? 'bg-gradient-to-br from-[#94A3B8] to-[#64748B] text-[#0A0E14]' :
+                            idx === 2 ? 'bg-gradient-to-br from-[#F59E0B] to-[#D97706] text-[#0A0E14]' : 'bg-[#475569] text-[#F8FAFC]'
                           }`}>
                             {idx + 1}
                           </div>
@@ -1887,7 +1887,7 @@ if (screen === 'leaderboards') {
       <div className="max-w-4xl mx-auto pt-8 relative z-10">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-3xl font-serif font-bold text-[#D4AF37]">🏆 Leaderboards</h2>
-          <button onClick={() => setScreen('home')} className="bg-poker-green-light text-[#D4AF37] border border-poker-gold/30 px-4 py-2 rounded-xl hover:border-white/20 transition">
+          <button onClick={() => setScreen('home')} className="bg-[#1E2433] hover:bg-[#252B3D] text-[#D4AF37] border border-white/10 hover:border-[#D4AF37]/50 px-4 py-2 rounded-xl transition-all duration-200">
             Back
           </button>
         </div>
@@ -1901,13 +1901,13 @@ if (screen === 'leaderboards') {
           ) : (
             <div className="space-y-3">
               {overallLeaderboard.map((player, idx) => (
-                <div key={player.name} className="bg-[#12161F] rounded-xl p-4 flex items-center gap-4 border border-white/10 hover:border-poker-gold/40 transition">
+                <div key={player.name} className="bg-[#12161F] rounded-xl p-4 flex items-center gap-4 border border-white/10 hover:border-[#D4AF37]/50 transition-all duration-200">
                   {/* Rank Badge */}
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl ${
-                    idx === 0 ? 'bg-poker-gold text-poker-green' :
-                    idx === 1 ? 'bg-poker-grey text-poker-green' :
-                    idx === 2 ? 'bg-amber-700 text-white' :
-                    'bg-gray-600 text-white'
+                    idx === 0 ? 'bg-gradient-to-br from-[#D4AF37] to-[#C9A942] text-[#0A0E14]' :
+                    idx === 1 ? 'bg-gradient-to-br from-[#94A3B8] to-[#64748B] text-[#0A0E14]' :
+                    idx === 2 ? 'bg-gradient-to-br from-[#F59E0B] to-[#D97706] text-[#0A0E14]' :
+                    'bg-[#475569] text-[#F8FAFC]'
                   }`}>
                     {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : idx + 1}
                   </div>
@@ -2325,13 +2325,13 @@ if (screen === 'groups') {
       <div className="max-w-4xl mx-auto pt-8 relative z-10">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-3xl font-serif font-bold text-[#D4AF37]">Saved Groups</h2>
-          <button onClick={() => setScreen('home')} className="bg-poker-green-light text-[#D4AF37] border border-poker-gold/30 px-4 py-2 rounded-xl hover:border-white/20 transition">
+          <button onClick={() => setScreen('home')} className="bg-[#1E2433] hover:bg-[#252B3D] text-[#D4AF37] border border-white/10 hover:border-[#D4AF37]/50 px-4 py-2 rounded-xl transition-all duration-200">
             Back
           </button>
         </div>
 
         {savedGroups.length === 0 ? (
-          <div className="text-center py-12 bg-poker-green-light/80 rounded-2xl border border-white/10">
+          <div className="text-center py-12 bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl border border-white/10">
             <Users size={48} className="mx-auto mb-4 text-[#D4AF37]/50" />
             <p className="text-[#64748B]">No saved groups yet</p>
             <p className="text-sm text-[#64748B]/70 mt-2">Create a game and save your player group!</p>
@@ -2357,7 +2357,7 @@ if (screen === 'groups') {
                     loadGroup(group);
                     setScreen('host');
                   }}
-                  className="w-full bg-poker-gold hover:bg-poker-gold-light text-poker-green font-semibold py-2 rounded-xl transition mt-2"
+                  className="w-full bg-gradient-to-r from-[#D4AF37] to-[#C9A942] hover:shadow-[0_6px_24px_rgba(212,175,55,0.4)] text-[#0A0E14] font-semibold py-2 rounded-xl transition-all duration-200 mt-2"
                 >
                   Load Group
                 </button>
