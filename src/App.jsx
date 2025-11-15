@@ -701,8 +701,8 @@ const updateQuickAmount = (index, value) => {
   // Show loading while checking auth
   if (!authChecked) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 text-white flex items-center justify-center">
-        <div className="text-2xl font-bold text-amber-400">Loading...</div>
+      <div className="min-h-screen bg-[#0A0E14] text-white flex items-center justify-center">
+        <div className="text-2xl font-bold text-[#D4AF37]">Loading...</div>
       </div>
     );
   }
@@ -977,42 +977,60 @@ const updateQuickAmount = (index, value) => {
 
   if (screen === 'host') {
     return (
-      <div className="min-h-screen bg-poker-green text-poker-cream p-6 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5 felt-texture"></div>
-        
+      <div className="min-h-screen bg-[#0A0E14] p-6 relative overflow-hidden">
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)',
+            backgroundSize: '48px 48px'
+          }}
+        />
+
         <div className="max-w-md mx-auto pt-8 relative z-10">
-          <h2 className="text-3xl font-serif font-bold mb-6 text-poker-gold">Host Game</h2>
-          <div className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-6 mb-6 border-2 border-poker-gold/30 shadow-xl">
-            <label className="block text-sm text-poker-gold mb-2 font-semibold uppercase tracking-wide">Session Name (Optional)</label>
-            <input 
-              type="text" 
-              value={sessionName} 
-              onChange={(e) => setSessionName(e.target.value)} 
-              placeholder="e.g., Sunday Runs with the Boys" 
-              className="w-full bg-poker-green text-poker-cream px-4 py-3 rounded-card mb-4 border border-poker-gold/20 focus:outline-none focus:ring-2 focus:ring-poker-gold placeholder:text-poker-grey" 
-            />
-            <label className="block text-sm text-poker-gold mb-2 font-semibold uppercase tracking-wide">Your Name</label>
-            <input 
-              type="text" 
-              value={playerName} 
-              onChange={(e) => setPlayerName(e.target.value)} 
-              placeholder="Enter your name" 
-              className="w-full bg-poker-green text-poker-cream px-4 py-3 rounded-card border border-poker-gold/20 focus:outline-none focus:ring-2 focus:ring-poker-gold placeholder:text-poker-grey" 
-            />
-          </div>
-          <button 
-            onClick={createGameHandler} 
-            disabled={!playerName.trim()} 
-            className="w-full bg-gradient-to-r from-poker-burgundy to-poker-burgundy-dark hover:from-poker-burgundy-dark hover:to-poker-burgundy disabled:from-gray-600 text-poker-cream font-bold py-4 rounded-card-lg mb-3 border-2 border-poker-gold/50 transition shadow-xl disabled:opacity-50"
+          <button
+            onClick={resetApp}
+            className="text-[#CBD5E1] hover:text-[#F8FAFC] mb-6 flex items-center gap-2 hover:bg-white/5 p-2 rounded-lg transition-all duration-200"
           >
-            Create Game
-          </button>
-          <button 
-            onClick={resetApp} 
-            className="w-full bg-poker-green-light text-poker-gold border border-poker-gold/30 py-3 rounded-card hover:border-poker-gold/50 transition"
-          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
             Back
           </button>
+
+          <h2 className="text-3xl font-bold mb-6 text-[#F8FAFC]">Host Game</h2>
+
+          <PremiumCard className="p-6 mb-6">
+            <PremiumInput
+              label="Session Name (Optional)"
+              type="text"
+              value={sessionName}
+              onChange={(e) => setSessionName(e.target.value)}
+              placeholder="e.g., Sunday Runs with the Boys"
+            />
+
+            <div className="mt-4">
+              <PremiumInput
+                label="Your Name"
+                type="text"
+                value={playerName}
+                onChange={(e) => setPlayerName(e.target.value)}
+                placeholder="Enter your name"
+              />
+            </div>
+          </PremiumCard>
+
+          <div className="space-y-3">
+            <PrimaryButton
+              onClick={createGameHandler}
+              disabled={!playerName.trim()}
+            >
+              Create Game
+            </PrimaryButton>
+
+            <GhostButton onClick={resetApp}>
+              Cancel
+            </GhostButton>
+          </div>
         </div>
       </div>
     );
@@ -1020,51 +1038,71 @@ const updateQuickAmount = (index, value) => {
 
   if (screen === 'join') {
     return (
-      <div className="min-h-screen bg-poker-green text-poker-cream p-6 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5 felt-texture"></div>
-        
+      <div className="min-h-screen bg-[#0A0E14] p-6 relative overflow-hidden">
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)',
+            backgroundSize: '48px 48px'
+          }}
+        />
+
         <div className="max-w-md mx-auto pt-8 relative z-10">
-          <h2 className="text-3xl font-serif font-bold mb-6 text-poker-gold">Join Game</h2>
-          <div className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-6 mb-6 border-2 border-poker-gold/30 shadow-xl">
-            <label className="block text-sm text-poker-gold mb-2 font-semibold uppercase tracking-wide">Game Code</label>
-            <input 
-              type="text" 
-              value={inputCode} 
-              onChange={(e) => setInputCode(e.target.value.toUpperCase())} 
-              maxLength={6} 
-              className="w-full bg-poker-green text-poker-cream text-center text-2xl font-mono tracking-widest px-4 py-3 rounded-card mb-4 border border-poker-gold/20 focus:outline-none focus:ring-2 focus:ring-poker-gold placeholder:text-poker-grey uppercase" 
-              placeholder="ABC123"
-            />
-            <label className="block text-sm text-poker-gold mb-2 font-semibold uppercase tracking-wide">Your Name</label>
-            <input 
-              type="text" 
-              value={playerName} 
-              onChange={(e) => setPlayerName(e.target.value)} 
-              placeholder="Enter your name" 
-              className="w-full bg-poker-green text-poker-cream px-4 py-3 rounded-card mb-4 border border-poker-gold/20 focus:outline-none focus:ring-2 focus:ring-poker-gold placeholder:text-poker-grey" 
-            />
-            <label className="block text-sm text-poker-gold mb-2 font-semibold uppercase tracking-wide">Venmo Username (Optional)</label>
-            <input 
-              type="text" 
-              value={venmoUsername} 
-              onChange={(e) => setVenmoUsername(e.target.value)} 
-              placeholder="@username" 
-              className="w-full bg-poker-green text-poker-cream px-4 py-3 rounded-card border border-poker-gold/20 focus:outline-none focus:ring-2 focus:ring-poker-gold placeholder:text-poker-grey" 
-            />
-          </div>
-          <button 
-            onClick={joinGameHandler} 
-            disabled={!inputCode.trim() || !playerName.trim()} 
-            className="w-full bg-gradient-to-r from-poker-gold to-poker-gold-dark hover:from-poker-gold-light hover:to-poker-gold disabled:from-gray-600 text-poker-green font-bold py-4 rounded-card-lg mb-3 border-2 border-poker-gold-dark transition shadow-xl disabled:opacity-50"
+          <button
+            onClick={resetApp}
+            className="text-[#CBD5E1] hover:text-[#F8FAFC] mb-6 flex items-center gap-2 hover:bg-white/5 p-2 rounded-lg transition-all duration-200"
           >
-            Join Game
-          </button>
-          <button 
-            onClick={resetApp} 
-            className="w-full bg-poker-green-light text-poker-gold border border-poker-gold/30 py-3 rounded-card hover:border-poker-gold/50 transition"
-          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
             Back
           </button>
+
+          <h2 className="text-3xl font-bold mb-6 text-[#F8FAFC]">Join Game</h2>
+
+          <PremiumCard className="p-6 mb-6">
+            <div className="mb-4">
+              <label className="block text-[#CBD5E1] text-sm font-medium mb-2 uppercase tracking-wide">
+                Game Code
+              </label>
+              <CodeInput
+                value={inputCode}
+                onChange={(e) => setInputCode(e.target.value.toUpperCase())}
+                maxLength={6}
+              />
+            </div>
+
+            <PremiumInput
+              label="Your Name"
+              type="text"
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+              placeholder="Enter your name"
+            />
+
+            <div className="mt-4">
+              <PremiumInput
+                label="Venmo Username (Optional)"
+                type="text"
+                value={venmoUsername}
+                onChange={(e) => setVenmoUsername(e.target.value)}
+                placeholder="@username"
+              />
+            </div>
+          </PremiumCard>
+
+          <div className="space-y-3">
+            <PrimaryButton
+              onClick={joinGameHandler}
+              disabled={!inputCode.trim() || !playerName.trim()}
+            >
+              Join Game
+            </PrimaryButton>
+
+            <GhostButton onClick={resetApp}>
+              Cancel
+            </GhostButton>
+          </div>
         </div>
       </div>
     );
@@ -1072,51 +1110,63 @@ const updateQuickAmount = (index, value) => {
 
   if (screen === 'lobby') {
     return (
-      <div className="min-h-screen bg-poker-green text-poker-cream p-6 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5 felt-texture"></div>
-        
+      <div className="min-h-screen bg-[#0A0E14] p-6 relative overflow-hidden">
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)',
+            backgroundSize: '48px 48px'
+          }}
+        />
+
         <div className="max-w-md mx-auto pt-8 relative z-10">
-          <h2 className="text-3xl font-serif font-bold mb-6 text-poker-gold">Game Lobby</h2>
-          
+          <h2 className="text-3xl font-bold mb-6 text-[#F8FAFC]">Game Lobby</h2>
+
           {/* Game Code Card */}
-          <div className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-6 mb-6 border-2 border-poker-gold/30 shadow-xl text-center">
-            <div className="text-sm text-poker-grey mb-2 uppercase tracking-wide">Game Code</div>
-            <div className="text-4xl font-mono font-bold text-poker-gold tracking-wider mb-4">{gameCode}</div>
-            <div className="flex gap-2">
-              <button 
-                onClick={shareCode} 
-                className="flex-1 bg-poker-gold hover:bg-poker-gold-light text-poker-green font-semibold py-2 rounded-card transition flex items-center justify-center gap-2"
-              >
-                <Share2 size={16} />
-                Share
-              </button>
-              <button 
-                onClick={copyCode} 
-                className="flex-1 bg-poker-green border border-poker-gold/30 hover:border-poker-gold/50 text-poker-gold font-semibold py-2 rounded-card transition flex items-center justify-center gap-2"
-              >
-                {copied ? <Check size={16} /> : <Copy size={16} />}
-                {copied ? 'Copied!' : 'Copy Link'}
-              </button>
+          <PremiumCard className="p-6 mb-6">
+            <div className="text-center">
+              <div className="text-[#64748B] text-xs uppercase tracking-wider mb-3">
+                Share Game Code
+              </div>
+              <div className="text-[#D4AF37] text-4xl font-mono font-bold tracking-[0.3em] mb-4 px-4 py-3 bg-[#12161F] rounded-xl border border-[#D4AF37]/20">
+                {gameCode}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={shareCode}
+                  className="flex-1 bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] font-medium py-2.5 px-4 rounded-xl hover:bg-[#D4AF37]/20 transition-all duration-200 flex items-center justify-center gap-2"
+                >
+                  <Share2 size={16} />
+                  Share
+                </button>
+                <button
+                  onClick={copyCode}
+                  className="flex-1 bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] font-medium py-2.5 px-4 rounded-xl hover:bg-[#D4AF37]/20 transition-all duration-200 flex items-center justify-center gap-2"
+                >
+                  {copied ? <Check size={16} /> : <Copy size={16} />}
+                  {copied ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
             </div>
-          </div>
+          </PremiumCard>
 
           {/* Session Name */}
           {sessionName && (
             <div className="text-center mb-4">
-              <div className="inline-block bg-poker-burgundy/30 border border-poker-burgundy text-poker-gold px-4 py-2 rounded-card text-sm font-serif italic">
+              <div className="inline-block bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] px-4 py-2 rounded-full text-sm italic">
                 "{sessionName}"
               </div>
             </div>
           )}
 
           {/* Players List */}
-          <div className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-4 mb-6 border-2 border-poker-gold/30 shadow-xl">
+          <PremiumCard className="p-4 mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-serif font-bold text-poker-gold">Players ({players.length})</h3>
+              <h3 className="text-lg font-bold text-[#F8FAFC]">Players ({players.length})</h3>
               {currentPlayer?.isHost && players.length >= 2 && (
-                <button 
-                  onClick={startGame} 
-                  className="bg-poker-gold hover:bg-poker-gold-light text-poker-green font-bold px-4 py-2 rounded-card transition text-sm"
+                <button
+                  onClick={startGame}
+                  className="bg-gradient-to-r from-[#D4AF37] to-[#C9A942] text-[#0A0E14] font-bold px-4 py-2 rounded-xl transition-all duration-200 text-sm hover:shadow-[0_6px_24px_rgba(212,175,55,0.4)]"
                 >
                   Start Game
                 </button>
@@ -1124,20 +1174,24 @@ const updateQuickAmount = (index, value) => {
             </div>
             <div className="space-y-2">
               {players.map(p => (
-                <div key={p.id} className="flex items-center justify-between bg-poker-green/50 p-3 rounded-card border border-poker-gold/20">
+                <div key={p.id} className="flex items-center justify-between bg-[#12161F] p-3 rounded-xl border border-white/5 hover:border-white/10 transition-all duration-200">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-poker-burgundy to-poker-burgundy-dark rounded-full flex items-center justify-center font-bold text-poker-gold border-2 border-poker-gold/50">
+                    <div className="w-10 h-10 bg-gradient-to-br from-[#D4AF37] to-[#C9A942] rounded-full flex items-center justify-center font-bold text-[#0A0E14] text-sm">
                       {p.name[0].toUpperCase()}
                     </div>
                     <div>
-                      <div className="font-semibold text-poker-cream">{p.name}</div>
-                      {p.isHost && <div className="text-xs text-poker-gold">👑 Host</div>}
+                      <div className="font-semibold text-[#F8FAFC]">{p.name}</div>
+                      {p.isHost && (
+                        <div className="flex items-center gap-1">
+                          <StatusBadge variant="info">Host</StatusBadge>
+                        </div>
+                      )}
                     </div>
                   </div>
                   {currentPlayer?.isHost && !p.isHost && (
-                    <button 
-                      onClick={() => kickPlayer(p.id)} 
-                      className="text-poker-burgundy hover:text-poker-burgundy-light transition text-sm"
+                    <button
+                      onClick={() => kickPlayer(p.id)}
+                      className="text-[#EF4444] hover:text-[#EF4444]/80 transition text-sm"
                     >
                       Remove
                     </button>
@@ -1145,37 +1199,36 @@ const updateQuickAmount = (index, value) => {
                 </div>
               ))}
             </div>
-          </div>
+          </PremiumCard>
 
           {/* Save Group (Host Only) */}
           {currentPlayer?.isHost && players.length >= 2 && (
-            <div className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-4 mb-6 border-2 border-poker-gold/30 shadow-xl">
-              <label className="block text-sm text-poker-gold mb-2 font-semibold uppercase tracking-wide">Save This Group</label>
+            <PremiumCard className="p-4 mb-6">
+              <label className="block text-sm text-[#CBD5E1] mb-2 font-medium uppercase tracking-wide">
+                Save This Group
+              </label>
               <div className="flex gap-2">
                 <input
                   type="text"
                   value={newGroupName}
                   onChange={(e) => setNewGroupName(e.target.value)}
                   placeholder="Group name"
-                  className="flex-1 bg-poker-green text-poker-cream px-4 py-2 rounded-card border border-poker-gold/20 focus:outline-none focus:ring-2 focus:ring-poker-gold placeholder:text-poker-grey"
+                  className="flex-1 bg-[#12161F] border border-white/10 text-[#F8FAFC] placeholder:text-[#64748B] px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50 focus:border-[#D4AF37]/50 transition-all duration-200"
                 />
                 <button
                   onClick={saveGroup}
                   disabled={!newGroupName.trim()}
-                  className="bg-poker-gold hover:bg-poker-gold-light disabled:bg-gray-600 text-poker-green font-semibold px-4 py-2 rounded-card transition disabled:opacity-50"
+                  className="bg-gradient-to-r from-[#D4AF37] to-[#C9A942] hover:shadow-[0_6px_24px_rgba(212,175,55,0.4)] disabled:opacity-50 disabled:cursor-not-allowed text-[#0A0E14] font-semibold px-4 py-2.5 rounded-xl transition-all duration-200"
                 >
                   Save
                 </button>
               </div>
-            </div>
+            </PremiumCard>
           )}
 
-          <button 
-            onClick={resetApp} 
-            className="w-full bg-poker-burgundy hover:bg-poker-burgundy-light text-poker-cream font-bold py-3 rounded-card-lg border-2 border-poker-gold/50 transition shadow-lg"
-          >
+          <DangerButton onClick={resetApp}>
             Leave Game
-          </button>
+          </DangerButton>
         </div>
       </div>
     );
@@ -1183,39 +1236,45 @@ const updateQuickAmount = (index, value) => {
 
   if (screen === 'game') {
     return (
-      <div className="min-h-screen bg-poker-green text-poker-cream p-6 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5 felt-texture"></div>
-        
+      <div className="min-h-screen bg-[#0A0E14] p-6 relative overflow-hidden">
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)',
+            backgroundSize: '48px 48px'
+          }}
+        />
+
         <div className="max-w-4xl mx-auto pt-8 relative z-10">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-3xl font-serif font-bold text-poker-gold">Active Game</h2>
-              {sessionName && <p className="text-sm text-poker-grey italic">"{sessionName}"</p>}
+              <h2 className="text-3xl font-bold text-[#F8FAFC]">Active Game</h2>
+              {sessionName && <p className="text-sm text-[#CBD5E1] italic">"{sessionName}"</p>}
             </div>
             <div className="text-right">
-              <div className="text-sm text-poker-grey">Game Code</div>
-              <div className="text-2xl font-mono font-bold text-poker-gold">{gameCode}</div>
+              <div className="text-xs text-[#64748B] uppercase tracking-wider">Code</div>
+              <div className="text-2xl font-mono font-bold text-[#D4AF37]">{gameCode}</div>
             </div>
           </div>
 
           {/* Players Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             {players.map(p => (
-              <div key={p.id} className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-4 border-2 border-poker-gold/30 shadow-lg">
+              <PremiumCard key={p.id} className="p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-poker-burgundy to-poker-burgundy-dark rounded-full flex items-center justify-center font-bold text-poker-gold text-lg border-2 border-poker-gold/50">
+                    <div className="w-12 h-12 bg-gradient-to-br from-[#D4AF37] to-[#C9A942] rounded-full flex items-center justify-center font-bold text-[#0A0E14] text-lg shadow-[0_4px_16px_rgba(212,175,55,0.3)]">
                       {p.name[0].toUpperCase()}
                     </div>
                     <div>
-                      <div className="font-serif font-bold text-poker-cream">{p.name}</div>
-                      {p.isHost && <div className="text-xs text-poker-gold">👑 Host</div>}
+                      <div className="font-bold text-[#F8FAFC]">{p.name}</div>
+                      {p.isHost && <StatusBadge variant="info">Host</StatusBadge>}
                     </div>
                   </div>
                   {currentPlayer?.isHost && !p.isHost && (
-                    <button 
-                      onClick={() => kickPlayer(p.id)} 
-                      className="text-poker-burgundy hover:text-poker-burgundy-light transition text-sm"
+                    <button
+                      onClick={() => kickPlayer(p.id)}
+                      className="text-[#EF4444] hover:text-[#EF4444]/80 transition text-sm"
                     >
                       Remove
                     </button>
@@ -1224,24 +1283,24 @@ const updateQuickAmount = (index, value) => {
 
                 {/* Buy-in Input */}
                 <div className="mb-3">
-                  <label className="block text-xs text-poker-grey mb-1 uppercase tracking-wide">Buy-in Amount</label>
+                  <label className="block text-xs text-[#64748B] mb-1 uppercase tracking-wide">Buy-in Amount</label>
                   <div className="flex gap-2">
                     <div className="relative flex-1">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-poker-gold">$</span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#D4AF37]">$</span>
                       <input
                         type="text"
                         value={p.id === currentPlayer?.id ? buyInInput : ''}
                         onChange={(e) => p.id === currentPlayer?.id && setBuyInInput(e.target.value)}
                         disabled={p.id !== currentPlayer?.id}
                         placeholder="0.00"
-                        className="w-full bg-poker-green text-poker-cream pl-7 pr-3 py-2 rounded-card border border-poker-gold/20 focus:outline-none focus:ring-2 focus:ring-poker-gold disabled:opacity-50 placeholder:text-poker-grey font-mono"
+                        className="w-full bg-[#12161F] text-[#F8FAFC] pl-7 pr-3 py-2 rounded-xl border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50 focus:border-[#D4AF37]/50 disabled:opacity-50 placeholder:text-[#64748B] font-mono transition-all duration-200"
                       />
                     </div>
                     {p.id === currentPlayer?.id && (
                       <button
                         onClick={addBuyIn}
                         disabled={!buyInInput || parseFloat(buyInInput) <= 0}
-                        className="bg-poker-gold hover:bg-poker-gold-light disabled:bg-gray-600 text-poker-green font-bold px-4 py-2 rounded-card transition disabled:opacity-50"
+                        className="bg-gradient-to-r from-[#D4AF37] to-[#C9A942] hover:shadow-[0_6px_24px_rgba(212,175,55,0.4)] disabled:opacity-50 disabled:cursor-not-allowed text-[#0A0E14] font-bold px-4 py-2 rounded-xl transition-all duration-200"
                       >
                         Add
                       </button>
@@ -1256,7 +1315,7 @@ const updateQuickAmount = (index, value) => {
                       <button
                         key={amount}
                         onClick={() => setBuyInInput(amount.toString())}
-                        className="flex-1 bg-poker-green hover:bg-poker-green-dark text-poker-gold text-xs py-1 rounded border border-poker-gold/20 hover:border-poker-gold/40 transition font-mono"
+                        className="flex-1 bg-[#12161F] hover:bg-[#1A1F2E] text-[#D4AF37] text-xs py-1.5 rounded-lg border border-white/10 hover:border-[#D4AF37]/30 transition-all duration-200 font-mono"
                       >
                         ${amount}
                       </button>
@@ -1266,11 +1325,11 @@ const updateQuickAmount = (index, value) => {
 
                 {/* Buy-ins List */}
                 {p.buyInsCents.length > 0 && (
-                  <div className="bg-poker-green/50 p-2 rounded-card border border-poker-gold/20 mb-2">
-                    <div className="text-xs text-poker-grey mb-1 uppercase tracking-wide">Buy-ins:</div>
+                  <div className="bg-[#12161F] p-2 rounded-xl border border-white/10 mb-2">
+                    <div className="text-xs text-[#64748B] mb-1 uppercase tracking-wide">Buy-ins:</div>
                     <div className="flex flex-wrap gap-1">
                       {p.buyInsCents.map((buyIn, idx) => (
-                        <span key={idx} className="text-xs bg-poker-gold/20 text-poker-gold px-2 py-0.5 rounded font-mono">
+                        <span key={idx} className="text-xs bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-0.5 rounded-md font-mono border border-[#D4AF37]/30">
                           ${centsToDollars(buyIn)}
                         </span>
                       ))}
@@ -1279,22 +1338,22 @@ const updateQuickAmount = (index, value) => {
                 )}
 
                 {/* Total Buy-in */}
-                <div className="flex justify-between text-sm mb-2 bg-poker-green/50 p-2 rounded-card border border-poker-gold/20">
-                  <span className="text-poker-grey">Total Buy-in:</span>
-                  <span className="font-mono font-bold text-poker-cream">${centsToDollars(p.totalBuyInCents)}</span>
+                <div className="flex justify-between text-sm mb-2 bg-[#12161F] p-2 rounded-xl border border-white/10">
+                  <span className="text-[#64748B]">Total Buy-in:</span>
+                  <span className="font-mono font-bold text-[#F8FAFC]">${centsToDollars(p.totalBuyInCents)}</span>
                 </div>
 
                 {/* Final Chips */}
                 <div>
-                  <label className="block text-xs text-poker-grey mb-1 uppercase tracking-wide">Final Chip Count</label>
+                  <label className="block text-xs text-[#64748B] mb-1 uppercase tracking-wide">Final Chip Count</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-poker-gold">$</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#D4AF37]">$</span>
                     <input
                       type="text"
                       value={p.finalChipsCents === null ? '' : centsToDollars(p.finalChipsCents)}
                       onChange={(e) => updateFinalChips(p.id, e.target.value)}
                       placeholder="0.00"
-                      className="w-full bg-poker-green text-poker-cream pl-7 pr-3 py-2 rounded-card border border-poker-gold/20 focus:outline-none focus:ring-2 focus:ring-poker-gold placeholder:text-poker-grey font-mono"
+                      className="w-full bg-[#12161F] text-[#F8FAFC] pl-7 pr-3 py-2 rounded-xl border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50 focus:border-[#D4AF37]/50 placeholder:text-[#64748B] font-mono transition-all duration-200"
                     />
                   </div>
                 </div>
@@ -1302,23 +1361,20 @@ const updateQuickAmount = (index, value) => {
                 {/* Net Result */}
                 {p.finalChipsCents !== null && (
                   <div className="mt-2 text-center">
-                    <div className={`text-2xl font-mono font-bold ${p.netResultCents >= 0 ? 'text-emerald-300' : 'text-poker-burgundy'}`}>
+                    <div className={`text-2xl font-mono font-bold ${p.netResultCents >= 0 ? 'text-[#10B981]' : 'text-[#EF4444]'}`}>
                       {p.netResultCents >= 0 ? '+' : ''}${centsToDollars(p.netResultCents)}
                     </div>
                   </div>
                 )}
-              </div>
+              </PremiumCard>
             ))}
           </div>
 
           {/* End Game Button */}
           {currentPlayer?.isHost && players.every(p => p.finalChipsCents !== null) && (
-            <button
-              onClick={endGame}
-              className="w-full bg-gradient-to-r from-poker-burgundy to-poker-burgundy-dark hover:from-poker-burgundy-dark hover:to-poker-burgundy text-poker-cream font-bold py-4 rounded-card-lg mb-4 border-2 border-poker-gold/50 transition shadow-xl"
-            >
+            <PrimaryButton onClick={endGame}>
               End Game & Calculate
-            </button>
+            </PrimaryButton>
           )}
         </div>
       </div>
@@ -1374,13 +1430,13 @@ const updateQuickAmount = (index, value) => {
     };
     
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 text-white p-6">
+      <div className="min-h-screen bg-[#0A0E14] text-white p-6">
         <div className="max-w-md mx-auto pt-8">
-          <h2 className="text-3xl font-bold mb-6 text-amber-400">FINAL COUNTS</h2>
+          <h2 className="text-3xl font-bold mb-6 text-[#D4AF37]">FINAL COUNTS</h2>
           <div className="bg-black/40 rounded-lg p-4 mb-6 border border-amber-500/30">
-            <div className="flex justify-between text-sm mb-1"><span className="text-amber-300">Buy-ins:</span><span>${centsToDollars(totalPot)}</span></div>
-            <div className="flex justify-between text-sm"><span className="text-amber-300">Chips:</span><span className={balanced ? 'text-emerald-400' : 'text-red-400'}>${centsToDollars(totalChips)}</span></div>
-            {!balanced && totalChips > 0 && <div className="mt-2 text-xs text-red-400">⚠️ Off by ${centsToDollars(Math.abs(totalPot - totalChips))}</div>}
+            <div className="flex justify-between text-sm mb-1"><span className="text-[#D4AF37]">Buy-ins:</span><span>${centsToDollars(totalPot)}</span></div>
+            <div className="flex justify-between text-sm"><span className="text-[#D4AF37]">Chips:</span><span className={balanced ? 'text-[#10B981]' : 'text-[#EF4444]'}>${centsToDollars(totalChips)}</span></div>
+            {!balanced && totalChips > 0 && <div className="mt-2 text-xs text-[#EF4444]">⚠️ Off by ${centsToDollars(Math.abs(totalPot - totalChips))}</div>}
           </div>
           <div className="space-y-3 mb-6">
             {players.map((player, index) => {
@@ -1404,14 +1460,14 @@ const updateQuickAmount = (index, value) => {
               }
               
               return (
-                <div key={player.id} className="bg-green-800/50 rounded-lg p-4">
+                <div key={player.id} className="bg-[#1E2433] rounded-lg p-4">
                   <div className="font-semibold mb-2">{player.name}</div>
-                  <div className="text-sm text-amber-300/70 mb-3">Buy-in: ${centsToDollars(player.totalBuyInCents)}</div>
-                  <label className="block text-sm text-amber-300 mb-2">Final Chips ($)</label>
+                  <div className="text-sm text-[#D4AF37]/70 mb-3">Buy-in: ${centsToDollars(player.totalBuyInCents)}</div>
+                  <label className="block text-sm text-[#D4AF37] mb-2">Final Chips ($)</label>
                   {isLastPlayer && otherPlayersHaveChips ? (
-                    <div className="w-full bg-blue-900/30 text-white px-4 py-3 rounded-lg border-2 border-blue-500/50 font-bold text-lg flex items-center justify-between">
+                    <div className="w-full bg-[#12161F] text-[#F8FAFC] px-4 py-3 rounded-lg border border-[#3B82F6]/30 font-bold text-lg flex items-center justify-between">
                       <span>${centsToDollars(player.finalChipsCents || 0)}</span>
-                      <span className="text-xs text-blue-300">AUTO</span>
+                      <span className="text-xs text-[#3B82F6]">AUTO</span>
                     </div>
                   ) : (
                     <input
@@ -1451,7 +1507,7 @@ const updateQuickAmount = (index, value) => {
             })}
           </div>
           <button onClick={calculateSettlement} disabled={!balanced} className="w-full bg-red-600 disabled:bg-gray-600 text-white font-bold py-4 rounded-xl mb-3 border-2 border-amber-500/50">CALCULATE</button>
-          <button onClick={() => setScreen('game')} className="w-full bg-black/40 text-amber-300 border border-amber-500/30 py-3 rounded-lg">Back</button>
+          <button onClick={() => setScreen('game')} className="w-full bg-black/40 text-[#D4AF37] border border-amber-500/30 py-3 rounded-lg">Back</button>
         </div>
       </div>
     );
@@ -1459,23 +1515,23 @@ const updateQuickAmount = (index, value) => {
 
   if (screen === 'settlement') {
     return (
-      <div className="min-h-screen bg-poker-green text-poker-cream p-6 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5 felt-texture"></div>
+      <div className="min-h-screen bg-[#0A0E14] text-[#F8FAFC] p-6 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-5 premium-pattern"></div>
         
         <div className="max-w-4xl mx-auto pt-8 relative z-10">
-          <h2 className="text-3xl font-serif font-bold mb-6 text-poker-gold text-center">Game Complete!</h2>
+          <h2 className="text-3xl font-serif font-bold mb-6 text-[#D4AF37] text-center">Game Complete!</h2>
 
           {/* Final Results */}
-          <div className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-6 mb-6 border-2 border-poker-gold/30 shadow-xl">
-            <h3 className="text-xl font-serif font-bold text-poker-gold mb-4">Final Results</h3>
+          <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl p-6 mb-6 border border-white/10 shadow-xl">
+            <h3 className="text-xl font-serif font-bold text-[#D4AF37] mb-4">Final Results</h3>
             <div className="space-y-2">
               {players.sort((a, b) => b.netResultCents - a.netResultCents).map(p => (
-                <div key={p.id} className="flex items-center justify-between bg-poker-green/50 p-3 rounded-card border border-poker-gold/20">
+                <div key={p.id} className="flex items-center justify-between bg-[#12161F] p-3 rounded-xl border border-white/10">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-poker-burgundy to-poker-burgundy-dark rounded-full flex items-center justify-center font-bold text-poker-gold border-2 border-poker-gold/50">
+                    <div className="w-10 h-10 bg-gradient-to-br from-[#EF4444] to-[#DC2626] rounded-full flex items-center justify-center font-bold text-[#D4AF37] border-2 border-poker-gold/50">
                       {p.name[0].toUpperCase()}
                     </div>
-                    <span className="font-semibold text-poker-cream">{p.name}</span>
+                    <span className="font-semibold text-[#F8FAFC]">{p.name}</span>
                   </div>
                   <div className={`text-2xl font-mono font-bold ${p.netResultCents >= 0 ? 'text-emerald-300' : 'text-poker-burgundy'}`}>
                     {p.netResultCents >= 0 ? '+' : ''}${centsToDollars(p.netResultCents)}
@@ -1487,18 +1543,18 @@ const updateQuickAmount = (index, value) => {
 
           {/* Settlements */}
           {settlements.length > 0 && (
-            <div className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-6 mb-6 border-2 border-poker-gold/30 shadow-xl">
-              <h3 className="text-xl font-serif font-bold text-poker-gold mb-4">Settlement Plan</h3>
+            <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl p-6 mb-6 border border-white/10 shadow-xl">
+              <h3 className="text-xl font-serif font-bold text-[#D4AF37] mb-4">Settlement Plan</h3>
               <div className="space-y-3">
                 {settlements.map((s, idx) => (
-                  <div key={idx} className="bg-poker-green/50 p-4 rounded-card border border-poker-gold/20">
+                  <div key={idx} className="bg-[#12161F] p-4 rounded-xl border border-white/10">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-poker-cream">{s.from}</span>
-                        <ArrowRight className="text-poker-gold" size={20} />
-                        <span className="font-semibold text-poker-cream">{s.to}</span>
+                        <span className="font-semibold text-[#F8FAFC]">{s.from}</span>
+                        <ArrowRight className="text-[#D4AF37]" size={20} />
+                        <span className="font-semibold text-[#F8FAFC]">{s.to}</span>
                       </div>
-                      <div className="text-xl font-mono font-bold text-poker-gold">
+                      <div className="text-xl font-mono font-bold text-[#D4AF37]">
                         ${centsToDollars(s.amountCents)}
                       </div>
                     </div>
@@ -1508,13 +1564,13 @@ const updateQuickAmount = (index, value) => {
                           href={generateVenmoLink(s.toVenmo, s.amountCents)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex-1 bg-poker-gold hover:bg-poker-gold-light text-poker-green font-semibold py-2 rounded-card transition text-center"
+                          className="flex-1 bg-poker-gold hover:bg-poker-gold-light text-poker-green font-semibold py-2 rounded-xl transition text-center"
                         >
                           Pay via Venmo
                         </a>
                         <button
                           onClick={() => markPaid(idx)}
-                          className={`flex-1 ${s.paid ? 'bg-emerald-600' : 'bg-poker-green border border-poker-gold/30'} hover:opacity-80 text-poker-cream font-semibold py-2 rounded-card transition`}
+                          className={`flex-1 ${s.paid ? 'bg-[#10B981]' : 'bg-poker-green border border-poker-gold/30'} hover:opacity-80 text-[#F8FAFC] font-semibold py-2 rounded-xl transition`}
                         >
                           {s.paid ? '✓ Paid' : 'Mark Paid'}
                         </button>
@@ -1527,19 +1583,19 @@ const updateQuickAmount = (index, value) => {
           )}
 
           {/* Game Notes */}
-          <div className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-6 mb-6 border-2 border-poker-gold/30 shadow-xl">
-            <label className="block text-sm text-poker-gold mb-2 font-semibold uppercase tracking-wide">Game Notes (Optional)</label>
+          <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl p-6 mb-6 border border-white/10 shadow-xl">
+            <label className="block text-sm text-[#D4AF37] mb-2 font-semibold uppercase tracking-wide">Game Notes (Optional)</label>
             <textarea
               value={gameNotes}
               onChange={(e) => setGameNotes(e.target.value)}
               placeholder="How was the game? Any memorable hands?"
-              className="w-full bg-poker-green text-poker-cream px-4 py-3 rounded-card border border-poker-gold/20 min-h-[100px] resize-none focus:outline-none focus:ring-2 focus:ring-poker-gold placeholder:text-poker-grey"
+              className="w-full bg-[#0A0E14] text-[#F8FAFC] px-4 py-3 rounded-xl border border-white/10 min-h-[100px] resize-none focus:outline-none focus:ring-2 focus:ring-poker-gold placeholder:text-[#64748B]"
             />
           </div>
 
           <button 
             onClick={resetApp} 
-            className="w-full bg-gradient-to-r from-poker-burgundy to-poker-burgundy-dark hover:from-poker-burgundy-dark hover:to-poker-burgundy text-poker-cream font-bold py-4 rounded-card-lg border-2 border-poker-gold/50 transition shadow-xl"
+            className="w-full bg-gradient-to-r from-[#EF4444] to-[#DC2626] hover:from-poker-burgundy-dark hover:to-poker-burgundy text-[#F8FAFC] font-bold py-4 rounded-2xl border-2 border-poker-gold/50 transition shadow-xl"
           >
             Done
           </button>
@@ -1550,31 +1606,31 @@ const updateQuickAmount = (index, value) => {
 
 if (screen === 'history') {
   return (
-    <div className="min-h-screen bg-poker-green text-poker-cream p-6 relative overflow-hidden">
-      <div className="absolute inset-0 opacity-5 felt-texture"></div>
+    <div className="min-h-screen bg-[#0A0E14] text-[#F8FAFC] p-6 relative overflow-hidden">
+      <div className="absolute inset-0 opacity-5 premium-pattern"></div>
       
       <div className="max-w-4xl mx-auto pt-8 relative z-10">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-3xl font-serif font-bold text-poker-gold">Game History</h2>
-          <button onClick={() => setScreen('home')} className="bg-poker-green-light text-poker-gold border border-poker-gold/30 px-4 py-2 rounded-card hover:border-poker-gold/50 transition">
+          <h2 className="text-3xl font-serif font-bold text-[#D4AF37]">Game History</h2>
+          <button onClick={() => setScreen('home')} className="bg-poker-green-light text-[#D4AF37] border border-poker-gold/30 px-4 py-2 rounded-xl hover:border-white/20 transition">
             Back
           </button>
         </div>
 
         {gameHistory.length === 0 ? (
-          <div className="text-center py-12 bg-poker-green-light/80 rounded-card-lg border-2 border-poker-gold/30">
-            <History size={48} className="mx-auto mb-4 text-poker-gold/50" />
-            <p className="text-poker-grey">No games yet. Start playing!</p>
+          <div className="text-center py-12 bg-poker-green-light/80 rounded-2xl border border-white/10">
+            <History size={48} className="mx-auto mb-4 text-[#D4AF37]/50" />
+            <p className="text-[#64748B]">No games yet. Start playing!</p>
           </div>
         ) : (
           <div className="space-y-3 mb-6">
             {gameHistory.map((g, i) => (
-              <div key={i} className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-4 border-2 border-poker-gold/30 hover:border-poker-gold/50 transition shadow-lg">
+              <div key={i} className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl p-4 border border-white/10 hover:border-white/20 transition shadow-lg">
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <div className="font-serif font-semibold text-poker-gold">{new Date(g.date).toLocaleDateString()}</div>
-                    {g.sessionName && <div className="text-sm text-poker-grey italic">"{g.sessionName}"</div>}
-                    <div className="text-sm text-poker-grey">{g.players.length} players</div>
+                    <div className="font-serif font-semibold text-[#D4AF37]">{new Date(g.date).toLocaleDateString()}</div>
+                    {g.sessionName && <div className="text-sm text-[#64748B] italic">"{g.sessionName}"</div>}
+                    <div className="text-sm text-[#64748B]">{g.players.length} players</div>
                   </div>
                   {g.myResult && (
                     <div className={`text-2xl font-mono font-bold ${parseFloat(g.myResult) > 0 ? 'text-emerald-300' : 'text-poker-burgundy'}`}>
@@ -1582,8 +1638,8 @@ if (screen === 'history') {
                     </div>
                   )}
                 </div>
-                <div className="text-xs text-poker-gold/60 font-mono">Code: {g.code}</div>
-                {g.notes && <div className="text-sm text-poker-cream/80 mt-2 italic border-t border-poker-gold/20 pt-2">"{g.notes}"</div>}
+                <div className="text-xs text-[#D4AF37]/60 font-mono">Code: {g.code}</div>
+                {g.notes && <div className="text-sm text-[#F8FAFC]/80 mt-2 italic border-t border-poker-gold/20 pt-2">"{g.notes}"</div>}
               </div>
             ))}
           </div>
@@ -1600,66 +1656,66 @@ if (screen === 'stats') {
   const losses = myGames.filter(g => parseFloat(g.myResult) < 0);
   
   return (
-    <div className="min-h-screen bg-poker-green text-poker-cream p-6 relative overflow-hidden">
-      <div className="absolute inset-0 opacity-5 felt-texture"></div>
+    <div className="min-h-screen bg-[#0A0E14] text-[#F8FAFC] p-6 relative overflow-hidden">
+      <div className="absolute inset-0 opacity-5 premium-pattern"></div>
       
       <div className="max-w-4xl mx-auto pt-8 relative z-10">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-3xl font-serif font-bold text-poker-gold">Your Stats</h2>
-          <button onClick={() => setScreen('home')} className="bg-poker-green-light text-poker-gold border border-poker-gold/30 px-4 py-2 rounded-card hover:border-poker-gold/50 transition">
+          <h2 className="text-3xl font-serif font-bold text-[#D4AF37]">Your Stats</h2>
+          <button onClick={() => setScreen('home')} className="bg-poker-green-light text-[#D4AF37] border border-poker-gold/30 px-4 py-2 rounded-xl hover:border-white/20 transition">
             Back
           </button>
         </div>
 
         {myGames.length === 0 ? (
-          <div className="text-center py-12 bg-poker-green-light/80 rounded-card-lg border-2 border-poker-gold/30">
-            <TrendingUp size={48} className="mx-auto mb-4 text-poker-gold/50" />
-            <p className="text-poker-grey">Play some games to see your stats!</p>
+          <div className="text-center py-12 bg-poker-green-light/80 rounded-2xl border border-white/10">
+            <TrendingUp size={48} className="mx-auto mb-4 text-[#D4AF37]/50" />
+            <p className="text-[#64748B]">Play some games to see your stats!</p>
           </div>
         ) : (
           <>
             {/* Net Profit/Loss Card */}
-            <div className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-6 mb-6 border-2 border-poker-gold/30 shadow-xl">
+            <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl p-6 mb-6 border border-white/10 shadow-xl">
               <div className="text-center mb-6">
-                <div className="text-sm text-poker-grey mb-1 uppercase tracking-wide">Net Profit/Loss</div>
-                <div className={`text-6xl font-mono font-bold ${parseFloat(stats.totalResult) > 0 ? 'text-emerald-300' : parseFloat(stats.totalResult) < 0 ? 'text-poker-burgundy' : 'text-poker-gold'}`}>
+                <div className="text-sm text-[#64748B] mb-1 uppercase tracking-wide">Net Profit/Loss</div>
+                <div className={`text-6xl font-mono font-bold ${parseFloat(stats.totalResult) > 0 ? 'text-emerald-300' : parseFloat(stats.totalResult) < 0 ? 'text-poker-burgundy' : 'text-[#D4AF37]'}`}>
                   {parseFloat(stats.totalResult) > 0 ? '+' : ''}${stats.totalResult}
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-4">
-                <div className="text-center bg-poker-green/50 p-3 rounded-card border border-poker-gold/20">
-                  <div className="text-2xl font-mono font-bold text-poker-gold">{stats.totalGames}</div>
-                  <div className="text-xs text-poker-grey">Total Games</div>
+                <div className="text-center bg-[#12161F] p-3 rounded-xl border border-white/10">
+                  <div className="text-2xl font-mono font-bold text-[#D4AF37]">{stats.totalGames}</div>
+                  <div className="text-xs text-[#64748B]">Total Games</div>
                 </div>
-                <div className="text-center bg-poker-green/50 p-3 rounded-card border border-poker-gold/20">
-                  <div className="text-2xl font-mono font-bold text-poker-gold">{stats.winRate}%</div>
-                  <div className="text-xs text-poker-grey">Win Rate</div>
+                <div className="text-center bg-[#12161F] p-3 rounded-xl border border-white/10">
+                  <div className="text-2xl font-mono font-bold text-[#D4AF37]">{stats.winRate}%</div>
+                  <div className="text-xs text-[#64748B]">Win Rate</div>
                 </div>
-                <div className="text-center bg-poker-green/50 p-3 rounded-card border border-poker-gold/20">
+                <div className="text-center bg-[#12161F] p-3 rounded-xl border border-white/10">
                   <div className="text-2xl font-mono font-bold text-emerald-300">{wins.length}W</div>
-                  <div className="text-xs text-poker-grey">{losses.length}L</div>
+                  <div className="text-xs text-[#64748B]">{losses.length}L</div>
                 </div>
               </div>
             </div>
 
             {/* Breakdown Card */}
-            <div className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-6 border-2 border-poker-gold/30 shadow-xl">
-              <h3 className="text-xl font-serif font-bold text-poker-gold mb-4">Breakdown</h3>
+            <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl p-6 border border-white/10 shadow-xl">
+              <h3 className="text-xl font-serif font-bold text-[#D4AF37] mb-4">Breakdown</h3>
               <div className="space-y-3">
-                <div className="flex justify-between bg-poker-green/50 p-3 rounded-card border border-poker-gold/20">
-                  <span className="text-poker-grey">Biggest Win</span>
+                <div className="flex justify-between bg-[#12161F] p-3 rounded-xl border border-white/10">
+                  <span className="text-[#64748B]">Biggest Win</span>
                   <span className="font-mono font-bold text-emerald-300">
                     +${wins.length > 0 ? Math.max(...wins.map(g => parseFloat(g.myResult))).toFixed(2) : '0.00'}
                   </span>
                 </div>
-                <div className="flex justify-between bg-poker-green/50 p-3 rounded-card border border-poker-gold/20">
-                  <span className="text-poker-grey">Biggest Loss</span>
+                <div className="flex justify-between bg-[#12161F] p-3 rounded-xl border border-white/10">
+                  <span className="text-[#64748B]">Biggest Loss</span>
                   <span className="font-mono font-bold text-poker-burgundy">
                     ${losses.length > 0 ? Math.min(...losses.map(g => parseFloat(g.myResult))).toFixed(2) : '0.00'}
                   </span>
                 </div>
-                <div className="flex justify-between bg-poker-green/50 p-3 rounded-card border border-poker-gold/20">
-                  <span className="text-poker-grey">Average per Game</span>
+                <div className="flex justify-between bg-[#12161F] p-3 rounded-xl border border-white/10">
+                  <span className="text-[#64748B]">Average per Game</span>
                   <span className={`font-mono font-bold ${parseFloat(stats.totalResult) / stats.totalGames > 0 ? 'text-emerald-300' : 'text-poker-burgundy'}`}>
                     {(parseFloat(stats.totalResult) / stats.totalGames > 0 ? '+' : '')}${(parseFloat(stats.totalResult) / stats.totalGames).toFixed(2)}
                   </span>
@@ -1680,46 +1736,46 @@ if (screen === 'analytics') {
   const myGames = gameHistory.filter(g => g.myResult !== null);
 
   return (
-    <div className="min-h-screen bg-poker-green text-poker-cream p-6 relative overflow-hidden">
-      <div className="absolute inset-0 opacity-5 felt-texture"></div>
+    <div className="min-h-screen bg-[#0A0E14] text-[#F8FAFC] p-6 relative overflow-hidden">
+      <div className="absolute inset-0 opacity-5 premium-pattern"></div>
       
       <div className="max-w-4xl mx-auto pt-8 relative z-10">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-3xl font-serif font-bold text-poker-gold">Analytics</h2>
-          <button onClick={() => setScreen('home')} className="bg-poker-green-light text-poker-gold border border-poker-gold/30 px-4 py-2 rounded-card hover:border-poker-gold/50 transition">
+          <h2 className="text-3xl font-serif font-bold text-[#D4AF37]">Analytics</h2>
+          <button onClick={() => setScreen('home')} className="bg-poker-green-light text-[#D4AF37] border border-poker-gold/30 px-4 py-2 rounded-xl hover:border-white/20 transition">
             Back
           </button>
         </div>
 
         {myGames.length === 0 ? (
-          <div className="text-center py-12 bg-poker-green-light/80 rounded-card-lg border-2 border-poker-gold/30">
-            <TrendingUp size={48} className="mx-auto mb-4 text-poker-gold/50" />
-            <p className="text-poker-grey">Play some games to see analytics!</p>
+          <div className="text-center py-12 bg-poker-green-light/80 rounded-2xl border border-white/10">
+            <TrendingUp size={48} className="mx-auto mb-4 text-[#D4AF37]/50" />
+            <p className="text-[#64748B]">Play some games to see analytics!</p>
           </div>
         ) : (
           <>
             {/* Tab Navigation */}
-            <div className="flex gap-2 mb-6 bg-poker-green-light/80 rounded-card p-1 border border-poker-gold/30">
+            <div className="flex gap-2 mb-6 bg-poker-green-light/80 rounded-xl p-1 border border-poker-gold/30">
               <button
                 onClick={() => setAnalyticsView('overview')}
-                className={`flex-1 py-2 rounded-card transition font-semibold ${
-                  analyticsView === 'overview' ? 'bg-poker-gold text-poker-green' : 'text-poker-gold hover:text-poker-gold-light'
+                className={`flex-1 py-2 rounded-xl transition font-semibold ${
+                  analyticsView === 'overview' ? 'bg-poker-gold text-poker-green' : 'text-[#D4AF37] hover:text-[#D4AF37]-light'
                 }`}
               >
                 Overview
               </button>
               <button
                 onClick={() => setAnalyticsView('trends')}
-                className={`flex-1 py-2 rounded-card transition font-semibold ${
-                  analyticsView === 'trends' ? 'bg-poker-gold text-poker-green' : 'text-poker-gold hover:text-poker-gold-light'
+                className={`flex-1 py-2 rounded-xl transition font-semibold ${
+                  analyticsView === 'trends' ? 'bg-poker-gold text-poker-green' : 'text-[#D4AF37] hover:text-[#D4AF37]-light'
                 }`}
               >
                 Trends
               </button>
               <button
                 onClick={() => setAnalyticsView('players')}
-                className={`flex-1 py-2 rounded-card transition font-semibold ${
-                  analyticsView === 'players' ? 'bg-poker-gold text-poker-green' : 'text-poker-gold hover:text-poker-gold-light'
+                className={`flex-1 py-2 rounded-xl transition font-semibold ${
+                  analyticsView === 'players' ? 'bg-poker-gold text-poker-green' : 'text-[#D4AF37] hover:text-[#D4AF37]-light'
                 }`}
               >
                 Players
@@ -1730,32 +1786,32 @@ if (screen === 'analytics') {
             {analyticsView === 'overview' && (
               <div className="space-y-6">
                 {/* Streaks */}
-                <div className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-6 border-2 border-poker-gold/30 shadow-xl">
-                  <h3 className="text-xl font-serif font-bold text-poker-gold mb-4">Streaks</h3>
+                <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl p-6 border border-white/10 shadow-xl">
+                  <h3 className="text-xl font-serif font-bold text-[#D4AF37] mb-4">Streaks</h3>
                   <div className="grid grid-cols-3 gap-4">
-                    <div className="bg-poker-green/50 rounded-card p-4 text-center border border-poker-gold/20">
-                      <div className={`text-3xl font-mono font-bold ${streaks.currentStreak > 0 ? 'text-emerald-300' : streaks.currentStreak < 0 ? 'text-poker-burgundy' : 'text-poker-grey'}`}>
+                    <div className="bg-[#12161F] rounded-xl p-4 text-center border border-white/10">
+                      <div className={`text-3xl font-mono font-bold ${streaks.currentStreak > 0 ? 'text-emerald-300' : streaks.currentStreak < 0 ? 'text-poker-burgundy' : 'text-[#64748B]'}`}>
                         {streaks.currentStreak > 0 ? `+${streaks.currentStreak}` : streaks.currentStreak}
                       </div>
-                      <div className="text-xs text-poker-grey mt-1">Current Streak</div>
+                      <div className="text-xs text-[#64748B] mt-1">Current Streak</div>
                     </div>
-                    <div className="bg-poker-green/50 rounded-card p-4 text-center border border-poker-gold/20">
+                    <div className="bg-[#12161F] rounded-xl p-4 text-center border border-white/10">
                       <div className="text-3xl font-mono font-bold text-emerald-300">{streaks.longestWinStreak}</div>
-                      <div className="text-xs text-poker-grey mt-1">Best Win Streak</div>
+                      <div className="text-xs text-[#64748B] mt-1">Best Win Streak</div>
                     </div>
-                    <div className="bg-poker-green/50 rounded-card p-4 text-center border border-poker-gold/20">
+                    <div className="bg-[#12161F] rounded-xl p-4 text-center border border-white/10">
                       <div className="text-3xl font-mono font-bold text-poker-burgundy">{streaks.longestLoseStreak}</div>
-                      <div className="text-xs text-poker-grey mt-1">Worst Lose Streak</div>
+                      <div className="text-xs text-[#64748B] mt-1">Worst Lose Streak</div>
                     </div>
                   </div>
                 </div>
 
                 {/* Best Days */}
-                <div className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-6 border-2 border-poker-gold/30 shadow-xl">
-                  <h3 className="text-xl font-serif font-bold text-poker-gold mb-4">Performance by Day</h3>
+                <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl p-6 border border-white/10 shadow-xl">
+                  <h3 className="text-xl font-serif font-bold text-[#D4AF37] mb-4">Performance by Day</h3>
                   <div className="space-y-2">
                     {dayStats.map((stat, idx) => (
-                      <div key={stat.day} className="flex items-center justify-between bg-poker-green/50 rounded-card p-3 border border-poker-gold/20">
+                      <div key={stat.day} className="flex items-center justify-between bg-[#12161F] rounded-xl p-3 border border-white/10">
                         <div className="flex items-center gap-3">
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
                             idx === 0 ? 'bg-poker-gold text-poker-green' : 
@@ -1765,8 +1821,8 @@ if (screen === 'analytics') {
                             {idx + 1}
                           </div>
                           <div>
-                            <div className="font-semibold text-poker-cream">{stat.day}</div>
-                            <div className="text-xs text-poker-grey">{stat.games} games</div>
+                            <div className="font-semibold text-[#F8FAFC]">{stat.day}</div>
+                            <div className="text-xs text-[#64748B]">{stat.games} games</div>
                           </div>
                         </div>
                         <div className={`text-xl font-mono font-bold ${stat.avgProfit >= 0 ? 'text-emerald-300' : 'text-poker-burgundy'}`}>
@@ -1782,15 +1838,15 @@ if (screen === 'analytics') {
             {/* Trends Tab */}
             {analyticsView === 'trends' && (
               <div className="space-y-6">
-                <div className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-6 border-2 border-poker-gold/30 shadow-xl">
-                  <h3 className="text-xl font-serif font-bold text-poker-gold mb-4">Monthly Profit/Loss</h3>
+                <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl p-6 border border-white/10 shadow-xl">
+                  <h3 className="text-xl font-serif font-bold text-[#D4AF37] mb-4">Monthly Profit/Loss</h3>
                   {monthlyData.length > 0 ? (
                     <div className="space-y-2">
                       {monthlyData.map(data => (
-                        <div key={data.month} className="flex items-center justify-between bg-poker-green/50 rounded-card p-3 border border-poker-gold/20">
+                        <div key={data.month} className="flex items-center justify-between bg-[#12161F] rounded-xl p-3 border border-white/10">
                           <div>
-                            <div className="font-semibold text-poker-cream">{data.month}</div>
-                            <div className="text-xs text-poker-grey">{data.games} games</div>
+                            <div className="font-semibold text-[#F8FAFC]">{data.month}</div>
+                            <div className="text-xs text-[#64748B]">{data.games} games</div>
                           </div>
                           <div className={`text-xl font-mono font-bold ${data.profit >= 0 ? 'text-emerald-300' : 'text-poker-burgundy'}`}>
                             {data.profit >= 0 ? '+' : ''}${data.profit.toFixed(2)}
@@ -1799,7 +1855,7 @@ if (screen === 'analytics') {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-poker-grey text-center">Not enough data yet</p>
+                    <p className="text-[#64748B] text-center">Not enough data yet</p>
                   )}
                 </div>
               </div>
@@ -1807,9 +1863,9 @@ if (screen === 'analytics') {
 
             {/* Players Tab */}
             {analyticsView === 'players' && (
-              <div className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-6 border-2 border-poker-gold/30 shadow-xl">
-                <h3 className="text-xl font-serif font-bold text-poker-gold mb-4">Player Stats</h3>
-                <p className="text-poker-grey text-center">Coming soon - Track performance against specific players</p>
+              <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl p-6 border border-white/10 shadow-xl">
+                <h3 className="text-xl font-serif font-bold text-[#D4AF37] mb-4">Player Stats</h3>
+                <p className="text-[#64748B] text-center">Coming soon - Track performance against specific players</p>
               </div>
             )}
           </>
@@ -1823,27 +1879,27 @@ if (screen === 'leaderboards') {
   const overallLeaderboard = getOverallLeaderboard();
 
   return (
-    <div className="min-h-screen bg-poker-green text-poker-cream p-6 relative overflow-hidden">
-      <div className="absolute inset-0 opacity-5 felt-texture"></div>
+    <div className="min-h-screen bg-[#0A0E14] text-[#F8FAFC] p-6 relative overflow-hidden">
+      <div className="absolute inset-0 opacity-5 premium-pattern"></div>
       
       <div className="max-w-4xl mx-auto pt-8 relative z-10">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-3xl font-serif font-bold text-poker-gold">🏆 Leaderboards</h2>
-          <button onClick={() => setScreen('home')} className="bg-poker-green-light text-poker-gold border border-poker-gold/30 px-4 py-2 rounded-card hover:border-poker-gold/50 transition">
+          <h2 className="text-3xl font-serif font-bold text-[#D4AF37]">🏆 Leaderboards</h2>
+          <button onClick={() => setScreen('home')} className="bg-poker-green-light text-[#D4AF37] border border-poker-gold/30 px-4 py-2 rounded-xl hover:border-white/20 transition">
             Back
           </button>
         </div>
 
         {/* Overall Leaderboard */}
-        <div className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-6 border-2 border-poker-gold/30 shadow-xl">
+        <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl p-6 border border-white/10 shadow-xl">
           {overallLeaderboard.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-poker-grey">No games played yet!</p>
+              <p className="text-[#64748B]">No games played yet!</p>
             </div>
           ) : (
             <div className="space-y-3">
               {overallLeaderboard.map((player, idx) => (
-                <div key={player.name} className="bg-poker-green/50 rounded-card p-4 flex items-center gap-4 border border-poker-gold/20 hover:border-poker-gold/40 transition">
+                <div key={player.name} className="bg-[#12161F] rounded-xl p-4 flex items-center gap-4 border border-white/10 hover:border-poker-gold/40 transition">
                   {/* Rank Badge */}
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl ${
                     idx === 0 ? 'bg-poker-gold text-poker-green' :
@@ -1856,8 +1912,8 @@ if (screen === 'leaderboards') {
 
                   {/* Player Info */}
                   <div className="flex-1">
-                    <div className="font-serif font-bold text-lg text-poker-cream">{player.name}</div>
-                    <div className="flex gap-4 text-xs text-poker-grey">
+                    <div className="font-serif font-bold text-lg text-[#F8FAFC]">{player.name}</div>
+                    <div className="flex gap-4 text-xs text-[#64748B]">
                       <span>{player.games} games</span>
                       <span>{player.winRate}% win rate</span>
                       {player.avgProfit && <span>Avg: ${player.avgProfit}</span>}
@@ -1887,16 +1943,16 @@ if (screen === 'leaderboards') {
 
 if (screen === 'settings') {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 text-white p-6">
+    <div className="min-h-screen bg-[#0A0E14] text-white p-6">
       <div className="max-w-md mx-auto pt-8">
-        <h2 className="text-3xl font-bold mb-6 text-amber-400">SETTINGS</h2>
+        <h2 className="text-3xl font-bold mb-6 text-[#D4AF37]">SETTINGS</h2>
         
         {/* Tab Navigation */}
         <div className="flex gap-2 mb-6 bg-black/40 rounded-lg p-1">
           <button
             onClick={() => setSettingsTab('account')}
             className={`flex-1 py-2 rounded-lg transition ${
-              settingsTab === 'account' ? 'bg-amber-600 text-white' : 'text-amber-300'
+              settingsTab === 'account' ? 'bg-amber-600 text-white' : 'text-[#D4AF37]'
             }`}
           >
             Account
@@ -1904,7 +1960,7 @@ if (screen === 'settings') {
           <button
             onClick={() => setSettingsTab('preferences')}
             className={`flex-1 py-2 rounded-lg transition ${
-              settingsTab === 'preferences' ? 'bg-amber-600 text-white' : 'text-amber-300'
+              settingsTab === 'preferences' ? 'bg-amber-600 text-white' : 'text-[#D4AF37]'
             }`}
           >
             Preferences
@@ -1916,7 +1972,7 @@ if (screen === 'settings') {
           <div className="space-y-4">
             {/* Display Name */}
             <div className="bg-black/40 rounded-lg p-4 border border-amber-500/30">
-              <label className="block text-sm text-amber-300 mb-2 font-semibold">DISPLAY NAME</label>
+              <label className="block text-sm text-[#D4AF37] mb-2 font-semibold">DISPLAY NAME</label>
               {!editingDisplayName ? (
                 <div className="flex items-center justify-between">
                   <span className="text-white text-lg">{userSettings.displayName}</span>
@@ -1959,7 +2015,7 @@ if (screen === 'settings') {
 
             {/* Email */}
             <div className="bg-black/40 rounded-lg p-4 border border-amber-500/30">
-              <label className="block text-sm text-amber-300 mb-2 font-semibold">EMAIL</label>
+              <label className="block text-sm text-[#D4AF37] mb-2 font-semibold">EMAIL</label>
               {!editingEmail ? (
                 <div className="flex items-center justify-between">
                   <span className="text-white text-lg">{userSettings.email}</span>
@@ -2010,7 +2066,7 @@ if (screen === 'settings') {
 
             {/* Password */}
             <div className="bg-black/40 rounded-lg p-4 border border-amber-500/30">
-              <label className="block text-sm text-amber-300 mb-2 font-semibold">PASSWORD</label>
+              <label className="block text-sm text-[#D4AF37] mb-2 font-semibold">PASSWORD</label>
               {!editingPassword ? (
                 <div className="flex items-center justify-between">
                   <span className="text-white text-lg">••••••••</span>
@@ -2066,7 +2122,7 @@ if (screen === 'settings') {
 
             {/* Delete Account */}
             <div className="bg-red-900/20 border border-red-700 rounded-lg p-4">
-              <label className="block text-sm text-red-400 mb-2 font-semibold">⚠️ DANGER ZONE</label>
+              <label className="block text-sm text-[#EF4444] mb-2 font-semibold">⚠️ DANGER ZONE</label>
               {!showDeleteConfirm ? (
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
@@ -2111,9 +2167,9 @@ if (screen === 'settings') {
           <div className="space-y-4">
             {/* Default Buy-in */}
             <div className="bg-black/40 rounded-lg p-4 border border-amber-500/30">
-              <label className="block text-sm text-amber-300 mb-2 font-semibold">DEFAULT BUY-IN</label>
+              <label className="block text-sm text-[#D4AF37] mb-2 font-semibold">DEFAULT BUY-IN</label>
               <div className="flex items-center gap-2">
-                <span className="text-amber-400">$</span>
+                <span className="text-[#D4AF37]">$</span>
                 <input
                   type="number"
                   value={userSettings.defaultBuyIn}
@@ -2127,7 +2183,7 @@ if (screen === 'settings') {
 
             {/* Payment Method */}
             <div className="bg-black/40 rounded-lg p-4 border border-amber-500/30">
-              <label className="block text-sm text-amber-300 mb-2 font-semibold">PREFERRED PAYMENT</label>
+              <label className="block text-sm text-[#D4AF37] mb-2 font-semibold">PREFERRED PAYMENT</label>
               <select
                 value={userSettings.preferredPayment}
                 onChange={(e) => setUserSettings({...userSettings, preferredPayment: e.target.value})}
@@ -2143,7 +2199,7 @@ if (screen === 'settings') {
 
             {/* Currency */}
             <div className="bg-black/40 rounded-lg p-4 border border-amber-500/30">
-              <label className="block text-sm text-amber-300 mb-2 font-semibold">CURRENCY</label>
+              <label className="block text-sm text-[#D4AF37] mb-2 font-semibold">CURRENCY</label>
               <select
                 value={userSettings.currency}
                 onChange={(e) => setUserSettings({...userSettings, currency: e.target.value})}
@@ -2160,7 +2216,7 @@ if (screen === 'settings') {
 
             {/* Quick Buy-in Amounts */}
             <div className="bg-black/40 rounded-lg p-4 border border-amber-500/30">
-              <label className="block text-sm text-amber-300 mb-2 font-semibold">QUICK BUY-IN AMOUNTS</label>
+              <label className="block text-sm text-[#D4AF37] mb-2 font-semibold">QUICK BUY-IN AMOUNTS</label>
               {!editingQuickAmounts ? (
                 <div>
                   <div className="flex flex-wrap gap-2 mb-3">
@@ -2185,7 +2241,7 @@ if (screen === 'settings') {
                   <div className="space-y-2">
                     {tempQuickAmounts.map((amount, index) => (
                       <div key={index} className="flex items-center gap-2">
-                        <span className="text-amber-400">$</span>
+                        <span className="text-[#D4AF37]">$</span>
                         <input
                           type="number"
                           value={amount}
@@ -2195,7 +2251,7 @@ if (screen === 'settings') {
                         />
                         <button
                           onClick={() => removeQuickAmount(index)}
-                          className="p-2 text-red-400 hover:text-red-300"
+                          className="p-2 text-[#EF4444] hover:text-red-300"
                         >
                           ✕
                         </button>
@@ -2228,7 +2284,7 @@ if (screen === 'settings') {
 
             {/* Sound Effects */}
             <div className="bg-black/40 rounded-lg p-4 border border-amber-500/30">
-              <label className="block text-sm text-amber-300 mb-2 font-semibold">SOUND EFFECTS</label>
+              <label className="block text-sm text-[#D4AF37] mb-2 font-semibold">SOUND EFFECTS</label>
               <div className="flex items-center justify-between">
                 <span className="text-white">{userSettings.soundEnabled ? 'Enabled' : 'Disabled'}</span>
                 <button
@@ -2251,7 +2307,7 @@ if (screen === 'settings') {
             </div>
           </div>
         )}   
-        <button onClick={() => setScreen('home')} className="w-full bg-black/40 text-amber-300 border border-amber-500/30 py-3 rounded-lg mt-6">
+        <button onClick={() => setScreen('home')} className="w-full bg-black/40 text-[#D4AF37] border border-amber-500/30 py-3 rounded-lg mt-6">
           Back
         </button>
       </div>
@@ -2261,31 +2317,31 @@ if (screen === 'settings') {
 
 if (screen === 'groups') {
   return (
-    <div className="min-h-screen bg-poker-green text-poker-cream p-6 relative overflow-hidden">
-      <div className="absolute inset-0 opacity-5 felt-texture"></div>
+    <div className="min-h-screen bg-[#0A0E14] text-[#F8FAFC] p-6 relative overflow-hidden">
+      <div className="absolute inset-0 opacity-5 premium-pattern"></div>
       
       <div className="max-w-4xl mx-auto pt-8 relative z-10">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-3xl font-serif font-bold text-poker-gold">Saved Groups</h2>
-          <button onClick={() => setScreen('home')} className="bg-poker-green-light text-poker-gold border border-poker-gold/30 px-4 py-2 rounded-card hover:border-poker-gold/50 transition">
+          <h2 className="text-3xl font-serif font-bold text-[#D4AF37]">Saved Groups</h2>
+          <button onClick={() => setScreen('home')} className="bg-poker-green-light text-[#D4AF37] border border-poker-gold/30 px-4 py-2 rounded-xl hover:border-white/20 transition">
             Back
           </button>
         </div>
 
         {savedGroups.length === 0 ? (
-          <div className="text-center py-12 bg-poker-green-light/80 rounded-card-lg border-2 border-poker-gold/30">
-            <Users size={48} className="mx-auto mb-4 text-poker-gold/50" />
-            <p className="text-poker-grey">No saved groups yet</p>
-            <p className="text-sm text-poker-grey/70 mt-2">Create a game and save your player group!</p>
+          <div className="text-center py-12 bg-poker-green-light/80 rounded-2xl border border-white/10">
+            <Users size={48} className="mx-auto mb-4 text-[#D4AF37]/50" />
+            <p className="text-[#64748B]">No saved groups yet</p>
+            <p className="text-sm text-[#64748B]/70 mt-2">Create a game and save your player group!</p>
           </div>
         ) : (
           <div className="space-y-3 mb-6">
             {savedGroups.map(group => (
-              <div key={group.id} className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-4 border-2 border-poker-gold/30 hover:border-poker-gold/50 transition shadow-lg">
+              <div key={group.id} className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl p-4 border border-white/10 hover:border-white/20 transition shadow-lg">
                 <div className="flex justify-between items-start mb-2">
                   <div className="flex-1">
-                    <div className="font-serif font-semibold text-lg text-poker-gold">{group.name}</div>
-                    <div className="text-sm text-poker-grey">{group.players.length} players: {group.players.map(p => p.name).join(', ')}</div>
+                    <div className="font-serif font-semibold text-lg text-[#D4AF37]">{group.name}</div>
+                    <div className="text-sm text-[#64748B]">{group.players.length} players: {group.players.map(p => p.name).join(', ')}</div>
                   </div>
                   <button
                     onClick={() => deleteGroup(group.id)}
@@ -2299,7 +2355,7 @@ if (screen === 'groups') {
                     loadGroup(group);
                     setScreen('host');
                   }}
-                  className="w-full bg-poker-gold hover:bg-poker-gold-light text-poker-green font-semibold py-2 rounded-card transition mt-2"
+                  className="w-full bg-poker-gold hover:bg-poker-gold-light text-poker-green font-semibold py-2 rounded-xl transition mt-2"
                 >
                   Load Group
                 </button>
