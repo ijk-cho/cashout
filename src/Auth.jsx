@@ -59,10 +59,7 @@ const Auth = ({ onAuthSuccess }) => {
   return (
     <div className="min-h-screen bg-poker-green text-poker-cream p-6 relative overflow-hidden flex items-center justify-center">
       {/* Felt texture overlay */}
-      <div className="absolute inset-0 opacity-5" style={{
-        backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,215,0,0.15) 1px, transparent 0)',
-        backgroundSize: '40px 40px'
-      }}></div>
+      <div className="absolute inset-0 opacity-5 felt-texture"></div>
       
       {/* Decorative elements */}
       <div className="absolute top-10 right-10 text-8xl opacity-10 text-poker-gold">♠</div>
@@ -74,7 +71,7 @@ const Auth = ({ onAuthSuccess }) => {
           <div className="inline-flex items-center justify-center w-24 h-24 rounded-full mb-4 bg-gradient-to-br from-poker-burgundy to-poker-burgundy-dark border-4 border-poker-gold shadow-2xl">
             <DollarSign size={40} className="text-poker-gold" strokeWidth={3} />
           </div>
-          <h1 className="text-5xl font-serif font-bold mb-2 text-poker-gold tracking-tight" style={{textShadow: '2px 2px 4px rgba(0,0,0,0.5)'}}>
+          <h1 className="text-5xl font-serif font-bold mb-2 text-poker-gold tracking-tight text-shadow-glow">
             CashOut
           </h1>
           <p className="text-poker-grey text-sm">Track games. Settle debts. Keep it clean.</p>
