@@ -5,6 +5,7 @@ import Auth from './Auth';
 import ProfilePage from './ProfilePage';
 import InstallPrompt from './InstallPrompt';
 import UpdateNotification from './UpdateNotification';
+import IOSInstallGuide from './IOSInstallGuide';
 import { DollarSign, Users, Plus, Share2, Copy, Check, TrendingUp, History, ArrowRight } from 'lucide-react';
 import { createGame, getGameByCode, updateGame, subscribeToGame, removePlayer, updatePaymentStatus } from './gameService';
 import { soundManager } from './sounds';
@@ -739,6 +740,7 @@ const updateQuickAmount = (index, value) => {
       <>
       <InstallPrompt />
       <UpdateNotification />
+      <IOSInstallGuide />
       <div className="min-h-screen bg-[#0A0E14] relative overflow-hidden">
         {/* Subtle Background Pattern */}
         <div
