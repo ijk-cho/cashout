@@ -1,0 +1,23 @@
+<svg width="192" height="192" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="192" height="192" fill="#064e3b" rx="28.799999999999997"/>
+
+  <!-- Outer poker chip ring -->
+  <circle cx="96" cy="96" r="67.19999999999999" fill="none" stroke="#dc2626" stroke-width="7.68"/>
+
+  <!-- Chip segments -->
+  <line x1="163.2" y1="96" x2="155.51999999999998" y2="96" stroke="#ffffff" stroke-width="3.84" stroke-linecap="round"/>
+  <line x1="143.51757569573599" y1="143.51757569573599" x2="138.0869956162233" y2="138.0869956162233" stroke="#ffffff" stroke-width="3.84" stroke-linecap="round"/>
+  <line x1="96" y1="163.2" x2="96" y2="155.51999999999998" stroke="#ffffff" stroke-width="3.84" stroke-linecap="round"/>
+  <line x1="48.48242430426402" y1="143.51757569573599" x2="53.9130043837767" y2="138.0869956162233" stroke="#ffffff" stroke-width="3.84" stroke-linecap="round"/>
+  <line x1="28.80000000000001" y1="96.00000000000001" x2="36.48000000000001" y2="96.00000000000001" stroke="#ffffff" stroke-width="3.84" stroke-linecap="round"/>
+  <line x1="48.482424304264" y1="48.48242430426402" x2="53.91300438377669" y2="53.9130043837767" stroke="#ffffff" stroke-width="3.84" stroke-linecap="round"/>
+  <line x1="95.99999999999999" y1="28.80000000000001" x2="95.99999999999999" y2="36.48000000000001" stroke="#ffffff" stroke-width="3.84" stroke-linecap="round"/>
+  <line x1="143.51757569573596" y1="48.482424304264" x2="138.0869956162233" y2="53.91300438377669" stroke="#ffffff" stroke-width="3.84" stroke-linecap="round"/>
+
+  <!-- Inner circle -->
+  <circle cx="96" cy="96" r="48" fill="#dc2626"/>
+
+  <!-- Dollar sign -->
+  <text x="96" y="96" font-family="Arial,sans-serif" font-size="67.19999999999999" font-weight="bold" fill="white" text-anchor="middle" dominant-baseline="central">$</text>
+</svg>
