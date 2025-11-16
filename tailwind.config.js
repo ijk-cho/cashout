@@ -56,9 +56,9 @@ export default {
         'poker-grey': '#E0E0E0',
       },
       fontFamily: {
-        'sans': ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'Segoe UI', 'system-ui', 'sans-serif'],
+        'sans': ['Inter', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
         'serif': ['Playfair Display', 'serif'],
-        'mono': ['SF Mono', 'Roboto Mono', 'Consolas', 'IBM Plex Mono', 'monospace'],
+        'mono': ['IBM Plex Mono', 'Consolas', 'monospace'],
       },
       borderRadius: {
         'card': '16px',
