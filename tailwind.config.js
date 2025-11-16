@@ -57,7 +57,7 @@ export default {
       },
       fontFamily: {
         'sans': ['Inter', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
-        'serif': ['Playfair Display', 'serif'],
+        'serif': ['serif'],
         'mono': ['IBM Plex Mono', 'Consolas', 'monospace'],
       },
       borderRadius: {
