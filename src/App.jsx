@@ -167,7 +167,6 @@ const AppRoutes = () => {
         <Route path="/profile" element={<AuthGuard><LegacyScreensWrapper screenName="Profile" /></AuthGuard>} />
         <Route path="/history" element={<AuthGuard><LegacyScreensWrapper screenName="History" /></AuthGuard>} />
         <Route path="/stats" element={<AuthGuard><LegacyScreensWrapper screenName="Stats" /></AuthGuard>} />
-        <Route path="/analytics" element={<AuthGuard><LegacyScreensWrapper screenName="Analytics" /></AuthGuard>} />
         <Route path="/leaderboards" element={<AuthGuard><LegacyScreensWrapper screenName="Leaderboards" /></AuthGuard>} />
         <Route path="/friends" element={<AuthGuard><LegacyScreensWrapper screenName="Friends" /></AuthGuard>} />
         <Route path="/settings" element={<AuthGuard><LegacyScreensWrapper screenName="Settings" /></AuthGuard>} />
