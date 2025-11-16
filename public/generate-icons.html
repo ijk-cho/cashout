@@ -92,56 +92,85 @@
       const ctx = canvas.getContext('2d');
       const size = canvas.width;
 
-      // Background with rounded corners
+      // Background with rounded corners (dark navy)
       const cornerRadius = size * 0.15;
-      ctx.fillStyle = '#064e3b';
+      ctx.fillStyle = '#0A0E14';
       ctx.beginPath();
       ctx.roundRect(0, 0, size, size, cornerRadius);
       ctx.fill();
 
-      // Outer poker chip ring
+      // Center coordinates
       const centerX = size / 2;
       const centerY = size / 2;
-      const chipRadius = size * 0.35;
 
-      ctx.strokeStyle = '#dc2626';
-      ctx.lineWidth = size * 0.04;
+      // Main poker chip (gold gradient effect)
+      const chipRadius = size * 0.38;
+
+      // Outer gold ring
+      ctx.strokeStyle = '#D4AF37';
+      ctx.lineWidth = size * 0.05;
       ctx.beginPath();
       ctx.arc(centerX, centerY, chipRadius, 0, Math.PI * 2);
       ctx.stroke();
 
-      // Chip segments (white marks)
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = size * 0.02;
+      // Inner burgundy/red ring
+      ctx.strokeStyle = '#8B0000';
+      ctx.lineWidth = size * 0.03;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, chipRadius - size * 0.06, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Chip edge segments (white marks around the rim)
+      ctx.strokeStyle = '#F8FAFC';
+      ctx.lineWidth = size * 0.025;
       ctx.lineCap = 'round';
 
-      [0, 45, 90, 135, 180, 225, 270, 315].forEach(angle => {
-        const rad = (angle * Math.PI) / 180;
-        const r1 = chipRadius;
-        const r2 = chipRadius - size * 0.04;
+      // 12 segments like a clock face
+      for (let i = 0; i < 12; i++) {
+        const angle = (i * 30 * Math.PI) / 180;
+        const r1 = chipRadius + size * 0.015;
+        const r2 = chipRadius - size * 0.025;
 
         ctx.beginPath();
         ctx.moveTo(
-          centerX + r1 * Math.cos(rad),
-          centerY + r1 * Math.sin(rad)
+          centerX + r1 * Math.cos(angle),
+          centerY + r1 * Math.sin(angle)
         );
         ctx.lineTo(
-          centerX + r2 * Math.cos(rad),
-          centerY + r2 * Math.sin(rad)
+          centerX + r2 * Math.cos(angle),
+          centerY + r2 * Math.sin(angle)
         );
         ctx.stroke();
-      });
+      }
 
-      // Inner circle
-      const innerRadius = size * 0.25;
-      ctx.fillStyle = '#dc2626';
+      // Center circle with gradient effect (gold)
+      const gradient = ctx.createRadialGradient(
+        centerX - size * 0.05,
+        centerY - size * 0.05,
+        0,
+        centerX,
+        centerY,
+        size * 0.28
+      );
+      gradient.addColorStop(0, '#F5D576');
+      gradient.addColorStop(1, '#D4AF37');
+
+      const innerRadius = size * 0.28;
+      ctx.fillStyle = gradient;
       ctx.beginPath();
       ctx.arc(centerX, centerY, innerRadius, 0, Math.PI * 2);
       ctx.fill();
 
+      // Inner burgundy ring for depth
+      ctx.strokeStyle = '#8B0000';
+      ctx.lineWidth = size * 0.015;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, innerRadius * 0.7, 0, Math.PI * 2);
+      ctx.stroke();
+
       // Dollar sign
-      ctx.fillStyle = '#ffffff';
-      ctx.font = `bold ${size * 0.35}px Arial, sans-serif`;
+      ctx.fillStyle = '#0A0E14';
+      ctx.font = `bold ${size * 0.32}px Arial, sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText('$', centerX, centerY);
