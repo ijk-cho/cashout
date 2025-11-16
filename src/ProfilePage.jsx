@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { TrendingUp, Trophy, Award, Flame, Target, Crown, Upload } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { storage } from './firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { updateProfile } from 'firebase/auth';
+import { auth } from './firebase';
 
 const ProfilePage = ({ user, gameHistory, onUpdateProfile, onBack }) => {
   const [isEditingName, setIsEditingName] = useState(false);
@@ -120,10 +124,46 @@ const ProfilePage = ({ user, gameHistory, onUpdateProfile, onBack }) => {
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    
-    // For now, just show alert - you'd implement Firebase Storage upload here
-    alert('Photo upload coming soon! This will store your profile picture.');
-    setUploading(false);
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image must be less than 5MB');
+      return;
+    }
+
+    try {
+      setUploading(true);
+
+      // Create a reference to store the image
+      const imageRef = ref(storage, `profile-pictures/${user.uid}/${Date.now()}_${file.name}`);
+
+      // Upload the file
+      await uploadBytes(imageRef, file);
+
+      // Get the download URL
+      const downloadURL = await getDownloadURL(imageRef);
+
+      // Update the user's profile with the new photo URL
+      await updateProfile(auth.currentUser, {
+        photoURL: downloadURL
+      });
+
+      // Trigger the parent component's update handler
+      onUpdateProfile({ photoURL: downloadURL });
+
+      alert('Profile picture updated successfully!');
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Failed to upload image. Please try again.');
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSaveName = () => {
