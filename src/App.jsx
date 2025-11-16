@@ -10,6 +10,14 @@ import HostGameScreen from './screens/HostGameScreen';
 import JoinGameScreen from './screens/JoinGameScreen';
 import GameLobbyScreen from './screens/GameLobbyScreen';
 import SettlementScreen from './screens/SettlementScreen';
+import ProfileScreen from './screens/ProfileScreen';
+import HistoryScreen from './screens/HistoryScreen';
+import StatsScreen from './screens/StatsScreen';
+import LeaderboardsScreen from './screens/LeaderboardsScreen';
+import FriendsScreen from './screens/FriendsScreen';
+import SettingsScreen from './screens/SettingsScreen';
+import GroupsScreen from './screens/GroupsScreen';
+import GameScreen from './screens/GameScreen';
 
 // Import components and utilities that are still needed for non-refactored screens
 import { DollarSign, Users, Plus, Share2, Copy, Check, TrendingUp, History, ArrowRight, Trophy, UserPlus, User, X, Search } from 'lucide-react';
@@ -55,7 +63,6 @@ import {
 import InstallPrompt from './InstallPrompt';
 import UpdateNotification from './UpdateNotification';
 import IOSInstallGuide from './IOSInstallGuide';
-import ComingSoon from './components/ComingSoon';
 
 // Utility functions
 const dollarsToCents = (dollarString) => {
@@ -127,11 +134,6 @@ const GameCodeHandler = () => {
   return null;
 };
 
-// Legacy screens wrapper for non-refactored screens
-const LegacyScreensWrapper = ({ screenName }) => {
-  return <ComingSoon screenName={screenName} />;
-};
-
 // Auth guard component
 const AuthGuard = ({ children }) => {
   const { user, authChecked } = useGame();
@@ -163,15 +165,15 @@ const AppRoutes = () => {
         <Route path="/lobby" element={<AuthGuard><GameLobbyScreen /></AuthGuard>} />
         <Route path="/settlement" element={<AuthGuard><SettlementScreen /></AuthGuard>} />
 
-        {/* Legacy routes - to be refactored later */}
-        <Route path="/profile" element={<AuthGuard><LegacyScreensWrapper screenName="Profile" /></AuthGuard>} />
-        <Route path="/history" element={<AuthGuard><LegacyScreensWrapper screenName="History" /></AuthGuard>} />
-        <Route path="/stats" element={<AuthGuard><LegacyScreensWrapper screenName="Stats" /></AuthGuard>} />
-        <Route path="/leaderboards" element={<AuthGuard><LegacyScreensWrapper screenName="Leaderboards" /></AuthGuard>} />
-        <Route path="/friends" element={<AuthGuard><LegacyScreensWrapper screenName="Friends" /></AuthGuard>} />
-        <Route path="/settings" element={<AuthGuard><LegacyScreensWrapper screenName="Settings" /></AuthGuard>} />
-        <Route path="/groups" element={<AuthGuard><LegacyScreensWrapper screenName="Groups" /></AuthGuard>} />
-        <Route path="/game" element={<AuthGuard><LegacyScreensWrapper screenName="Game" /></AuthGuard>} />
+        {/* Refactored screen routes */}
+        <Route path="/profile" element={<AuthGuard><ProfileScreen /></AuthGuard>} />
+        <Route path="/history" element={<AuthGuard><HistoryScreen /></AuthGuard>} />
+        <Route path="/stats" element={<AuthGuard><StatsScreen /></AuthGuard>} />
+        <Route path="/leaderboards" element={<AuthGuard><LeaderboardsScreen /></AuthGuard>} />
+        <Route path="/friends" element={<AuthGuard><FriendsScreen /></AuthGuard>} />
+        <Route path="/settings" element={<AuthGuard><SettingsScreen /></AuthGuard>} />
+        <Route path="/groups" element={<AuthGuard><GroupsScreen /></AuthGuard>} />
+        <Route path="/game" element={<AuthGuard><GameScreen /></AuthGuard>} />
 
         {/* Catch-all redirect */}
         <Route path="*" element={<Navigate to="/" replace />} />
