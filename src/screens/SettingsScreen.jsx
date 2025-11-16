@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Settings, User, Bell, Shield, Trash2, LogOut, Moon, Sun } from 'lucide-react';
-import { auth } from '../firebase';
+import { Settings, User, Bell, Shield, Trash2, LogOut, Moon, Sun, Upload, Camera } from 'lucide-react';
+import { auth, storage } from '../firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { updateProfile } from 'firebase/auth';
 import { useGame } from '../contexts/GameContext';
 import {
   PrimaryButton,
@@ -19,15 +21,74 @@ const SettingsScreen = () => {
   const [notifications, setNotifications] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [darkMode, setDarkMode] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [photoURL, setPhotoURL] = useState(user?.photoURL || '');
 
   const handleBack = () => {
     navigate('/');
   };
 
-  const handleUpdateProfile = () => {
-    // TODO: Implement Firebase profile update
-    console.log('Update profile:', { displayName, venmoUsername });
-    alert('Profile update coming soon!');
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image must be less than 5MB');
+      return;
+    }
+
+    try {
+      setUploading(true);
+
+      // Create a reference to store the image
+      const imageRef = ref(storage, `profile-pictures/${user.uid}/${Date.now()}_${file.name}`);
+
+      // Upload the file
+      await uploadBytes(imageRef, file);
+
+      // Get the download URL
+      const downloadURL = await getDownloadURL(imageRef);
+
+      // Update the user's profile with the new photo URL
+      await updateProfile(auth.currentUser, {
+        photoURL: downloadURL
+      });
+
+      // Update local state
+      setPhotoURL(downloadURL);
+
+      alert('Profile picture updated successfully!');
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Failed to upload image. Please try again.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleUpdateProfile = async () => {
+    try {
+      // Update display name if changed
+      if (displayName !== user?.displayName) {
+        await updateProfile(auth.currentUser, {
+          displayName: displayName.trim()
+        });
+      }
+
+      // TODO: Implement Venmo username storage (could use Firestore)
+      console.log('Update profile:', { displayName, venmoUsername });
+      alert('Profile updated successfully!');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Failed to update profile. Please try again.');
+    }
   };
 
   const handleClearHistory = () => {
@@ -92,6 +153,41 @@ const SettingsScreen = () => {
             </div>
 
             <div className="space-y-4">
+              {/* Profile Picture */}
+              <div className="flex items-center gap-4 p-4 bg-[#12161F] rounded-xl">
+                <div className="relative">
+                  <div className="w-20 h-20 bg-gradient-to-br from-[#D4AF37] to-[#C9A942] rounded-full flex items-center justify-center font-bold text-3xl shadow-lg overflow-hidden">
+                    {photoURL ? (
+                      <img src={photoURL} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-[#0A0E14]">
+                        {(displayName || user?.email || 'U')[0].toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <label className="absolute bottom-0 right-0 bg-gradient-to-br from-[#D4AF37] to-[#C9A942] hover:shadow-[0_6px_24px_rgba(212,175,55,0.4)] rounded-full p-2 cursor-pointer transition-all duration-200 shadow-lg">
+                    {uploading ? (
+                      <div className="w-4 h-4 border-2 border-[#0A0E14] border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <Camera size={16} className="text-[#0A0E14]" />
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      disabled={uploading}
+                    />
+                  </label>
+                </div>
+                <div className="flex-1">
+                  <div className="font-medium text-[#F8FAFC] mb-1">Profile Picture</div>
+                  <div className="text-xs text-[#64748B]">
+                    {uploading ? 'Uploading...' : 'Click camera icon to upload (max 5MB)'}
+                  </div>
+                </div>
+              </div>
+
               <PremiumInput
                 label="Display Name"
                 type="text"
