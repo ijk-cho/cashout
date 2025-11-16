@@ -349,14 +349,6 @@ const HomePage = () => {
             </button>
 
             <button
-              onClick={() => navigate('/analytics')}
-              className="bg-transparent border border-white/10 text-[#CBD5E1] font-medium py-3.5 px-4 rounded-xl hover:bg-white/5 hover:border-white/20 transition-all duration-200 flex flex-col items-center justify-center gap-2"
-            >
-              <TrendingUp size={18} strokeWidth={2} />
-              <span className="text-xs">Analytics</span>
-            </button>
-
-            <button
               onClick={() => navigate('/leaderboards')}
               className="bg-transparent border border-white/10 text-[#CBD5E1] font-medium py-3.5 px-4 rounded-xl hover:bg-white/5 hover:border-white/20 transition-all duration-200 flex flex-col items-center justify-center gap-2"
             >
