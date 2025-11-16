@@ -8,37 +8,54 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Create SVG icon content
+// Create SVG icon content with UI kit colors
 function createSVGIcon(size) {
+  const chipRadius = size * 0.38;
+  const innerRadius = size * 0.28;
+
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background -->
-  <rect width="${size}" height="${size}" fill="#064e3b" rx="${size * 0.15}"/>
+  <defs>
+    <!-- Radial gradient for center circle -->
+    <radialGradient id="goldGradient">
+      <stop offset="0%" style="stop-color:#F5D576;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D4AF37;stop-opacity:1" />
+    </radialGradient>
+  </defs>
 
-  <!-- Poker chip outer ring -->
-  <circle cx="${size/2}" cy="${size/2}" r="${size * 0.35}" fill="none" stroke="#dc2626" stroke-width="${size * 0.04}"/>
+  <!-- Background (dark navy) -->
+  <rect width="${size}" height="${size}" fill="#0A0E14" rx="${size * 0.15}"/>
 
-  <!-- Poker chip segments -->
-  ${[0, 45, 90, 135, 180, 225, 270, 315].map(angle => {
-    const rad = (angle * Math.PI) / 180;
-    const r1 = size * 0.35;
-    const r2 = size * 0.31;
-    const x1 = size/2 + r1 * Math.cos(rad);
-    const y1 = size/2 + r1 * Math.sin(rad);
-    const x2 = size/2 + r2 * Math.cos(rad);
-    const y2 = size/2 + r2 * Math.sin(rad);
-    return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#ffffff" stroke-width="${size * 0.02}" stroke-linecap="round"/>`;
+  <!-- Outer gold ring -->
+  <circle cx="${size/2}" cy="${size/2}" r="${chipRadius}" fill="none" stroke="#D4AF37" stroke-width="${size * 0.05}"/>
+
+  <!-- Inner burgundy/red ring -->
+  <circle cx="${size/2}" cy="${size/2}" r="${chipRadius - size * 0.06}" fill="none" stroke="#8B0000" stroke-width="${size * 0.03}"/>
+
+  <!-- Chip edge segments (12 marks like a clock) -->
+  ${Array.from({length: 12}).map((_, i) => {
+    const angle = (i * 30 * Math.PI) / 180;
+    const r1 = chipRadius + size * 0.015;
+    const r2 = chipRadius - size * 0.025;
+    const x1 = size/2 + r1 * Math.cos(angle);
+    const y1 = size/2 + r1 * Math.sin(angle);
+    const x2 = size/2 + r2 * Math.cos(angle);
+    const y2 = size/2 + r2 * Math.sin(angle);
+    return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#F8FAFC" stroke-width="${size * 0.025}" stroke-linecap="round"/>`;
   }).join('\n  ')}
 
-  <!-- Inner circle -->
-  <circle cx="${size/2}" cy="${size/2}" r="${size * 0.25}" fill="#dc2626"/>
+  <!-- Center circle with gold gradient -->
+  <circle cx="${size/2}" cy="${size/2}" r="${innerRadius}" fill="url(#goldGradient)"/>
+
+  <!-- Inner burgundy ring for depth -->
+  <circle cx="${size/2}" cy="${size/2}" r="${innerRadius * 0.7}" fill="none" stroke="#8B0000" stroke-width="${size * 0.015}"/>
 
   <!-- Dollar sign -->
-  <text x="${size/2}" y="${size/2 + size * 0.12}"
+  <text x="${size/2}" y="${size/2 + size * 0.11}"
         font-family="Arial, sans-serif"
-        font-size="${size * 0.35}"
+        font-size="${size * 0.32}"
         font-weight="bold"
-        fill="white"
+        fill="#0A0E14"
         text-anchor="middle">$</text>
 </svg>`;
 }

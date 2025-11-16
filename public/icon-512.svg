@@ -1,23 +1,47 @@
-<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background -->
-  <rect width="512" height="512" fill="#064e3b" rx="76.8"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Radial gradient for center circle -->
+    <radialGradient id="goldGradient">
+      <stop offset="0%" style="stop-color:#F5D576;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D4AF37;stop-opacity:1" />
+    </radialGradient>
+  </defs>
 
-  <!-- Outer poker chip ring -->
-  <circle cx="256" cy="256" r="179.2" fill="none" stroke="#dc2626" stroke-width="20.48"/>
+  <!-- Background (dark navy) -->
+  <rect width="512" height="512" fill="#0A0E14" rx="76.8"/>
 
-  <!-- Chip segments -->
-  <line x1="435.2" y1="256" x2="414.72" y2="256" stroke="#ffffff" stroke-width="10.24" stroke-linecap="round"/>
-  <line x1="382.7135351886293" y1="382.7135351886293" x2="368.23198830992885" y2="368.2319883099288" stroke="#ffffff" stroke-width="10.24" stroke-linecap="round"/>
-  <line x1="256" y1="435.2" x2="256" y2="414.72" stroke="#ffffff" stroke-width="10.24" stroke-linecap="round"/>
-  <line x1="129.2864648113707" y1="382.7135351886293" x2="143.7680116900712" y2="368.23198830992885" stroke="#ffffff" stroke-width="10.24" stroke-linecap="round"/>
-  <line x1="76.80000000000001" y1="256" x2="97.28" y2="256" stroke="#ffffff" stroke-width="10.24" stroke-linecap="round"/>
-  <line x1="129.28646481137065" y1="129.2864648113707" x2="143.76801169007115" y2="143.7680116900712" stroke="#ffffff" stroke-width="10.24" stroke-linecap="round"/>
-  <line x1="255.99999999999997" y1="76.80000000000001" x2="255.99999999999997" y2="97.28" stroke="#ffffff" stroke-width="10.24" stroke-linecap="round"/>
-  <line x1="382.7135351886293" y1="129.28646481137065" x2="368.2319883099288" y2="143.76801169007115" stroke="#ffffff" stroke-width="10.24" stroke-linecap="round"/>
+  <!-- Outer gold ring -->
+  <circle cx="256" cy="256" r="194.56" fill="none" stroke="#D4AF37" stroke-width="25.6"/>
 
-  <!-- Inner circle -->
-  <circle cx="256" cy="256" r="128" fill="#dc2626"/>
+  <!-- Inner burgundy/red ring -->
+  <circle cx="256" cy="256" r="163.84" fill="none" stroke="#8B0000" stroke-width="15.36"/>
+
+  <!-- Chip edge segments (12 marks like a clock) -->
+  <line x1="458.24" y1="256" x2="437.76" y2="256" stroke="#F8FAFC" stroke-width="12.8" stroke-linecap="round"/>
+  <line x1="431.1449776613649" y1="357.12" x2="413.40877739185953" y2="346.88" stroke="#F8FAFC" stroke-width="12.8" stroke-linecap="round"/>
+  <line x1="357.12" y1="431.14497766136486" x2="346.88" y2="413.40877739185953" stroke="#F8FAFC" stroke-width="12.8" stroke-linecap="round"/>
+  <line x1="256" y1="458.24" x2="256" y2="437.76" stroke="#F8FAFC" stroke-width="12.8" stroke-linecap="round"/>
+  <line x1="154.88000000000005" y1="431.1449776613649" x2="165.12000000000006" y2="413.40877739185953" stroke="#F8FAFC" stroke-width="12.8" stroke-linecap="round"/>
+  <line x1="80.85502233863511" y1="357.12" x2="98.59122260814044" y2="346.88" stroke="#F8FAFC" stroke-width="12.8" stroke-linecap="round"/>
+  <line x1="53.75999999999999" y1="256" x2="74.24000000000001" y2="256" stroke="#F8FAFC" stroke-width="12.8" stroke-linecap="round"/>
+  <line x1="80.85502233863514" y1="154.87999999999997" x2="98.59122260814044" y2="165.12" stroke="#F8FAFC" stroke-width="12.8" stroke-linecap="round"/>
+  <line x1="154.8799999999999" y1="80.85502233863517" x2="165.11999999999992" y2="98.59122260814047" stroke="#F8FAFC" stroke-width="12.8" stroke-linecap="round"/>
+  <line x1="255.99999999999997" y1="53.75999999999999" x2="255.99999999999997" y2="74.24000000000001" stroke="#F8FAFC" stroke-width="12.8" stroke-linecap="round"/>
+  <line x1="357.12" y1="80.85502233863514" x2="346.88" y2="98.59122260814044" stroke="#F8FAFC" stroke-width="12.8" stroke-linecap="round"/>
+  <line x1="431.1449776613648" y1="154.8799999999999" x2="413.40877739185953" y2="165.11999999999992" stroke="#F8FAFC" stroke-width="12.8" stroke-linecap="round"/>
+
+  <!-- Center circle with gold gradient -->
+  <circle cx="256" cy="256" r="143.36" fill="url(#goldGradient)"/>
+
+  <!-- Inner burgundy ring for depth -->
+  <circle cx="256" cy="256" r="100.352" fill="none" stroke="#8B0000" stroke-width="7.68"/>
 
   <!-- Dollar sign -->
-  <text x="256" y="256" font-family="Arial,sans-serif" font-size="179.2" font-weight="bold" fill="white" text-anchor="middle" dominant-baseline="central">$</text>
+  <text x="256" y="312.32"
+        font-family="Arial, sans-serif"
+        font-size="163.84"
+        font-weight="bold"
+        fill="#0A0E14"
+        text-anchor="middle">$</text>
 </svg>
