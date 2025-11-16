@@ -6,8 +6,26 @@ import ProfilePage from './ProfilePage';
 import InstallPrompt from './InstallPrompt';
 import UpdateNotification from './UpdateNotification';
 import IOSInstallGuide from './IOSInstallGuide';
-import { DollarSign, Users, Plus, Share2, Copy, Check, TrendingUp, History, ArrowRight, Trophy } from 'lucide-react';
+import { DollarSign, Users, Plus, Share2, Copy, Check, TrendingUp, History, ArrowRight, Trophy, UserPlus, User, X, Search } from 'lucide-react';
 import { createGame, getGameByCode, updateGame, subscribeToGame, removePlayer, updatePaymentStatus } from './gameService';
+import {
+  sendFriendRequest,
+  acceptFriendRequest,
+  rejectFriendRequest,
+  removeFriend,
+  cancelFriendRequest,
+  getFriends,
+  getPendingRequests,
+  getSentRequests,
+  searchUsers,
+  getFriendshipStatus,
+  getFriendStats,
+  subscribeToFriends,
+  sendGameInvite,
+  getGameInvites,
+  dismissGameInvite,
+  subscribeToGameInvites
+} from './friendService';
 import { soundManager } from './sounds';
 import {
   PrimaryButton,
@@ -136,6 +154,18 @@ const PokerSettleApp = () => {
 
   const [selectedGroupId, setSelectedGroupId] = useState(null);
 
+  // Friends state
+  const [friends, setFriends] = useState([]);
+  const [pendingRequests, setPendingRequests] = useState([]);
+  const [sentRequests, setSentRequests] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [selectedFriend, setSelectedFriend] = useState(null);
+  const [friendStats, setFriendStats] = useState(null);
+  const [friendsTab, setFriendsTab] = useState('friends'); // 'friends', 'requests', 'search'
+  const [inviteSelectedFriends, setInviteSelectedFriends] = useState([]);
+  const [gameInvites, setGameInvites] = useState([]);
+
   useEffect(() => {
     const saved = localStorage.getItem('pokerGameHistory');
     if (saved) {
@@ -201,6 +231,34 @@ const PokerSettleApp = () => {
       setShowProfileMenu(false);
     }
   }, [screen]);
+
+  // Subscribe to friends updates
+  useEffect(() => {
+    if (user && user !== 'guest' && user.uid) {
+      const unsubscribeFriends = subscribeToFriends(({ friends: f, pending: p, sent: s }) => {
+        setFriends(f);
+        setPendingRequests(p);
+        setSentRequests(s);
+      });
+
+      return () => {
+        if (unsubscribeFriends) unsubscribeFriends();
+      };
+    }
+  }, [user]);
+
+  // Subscribe to game invites
+  useEffect(() => {
+    if (user && user !== 'guest' && user.uid) {
+      const unsubscribeInvites = subscribeToGameInvites((invites) => {
+        setGameInvites(invites);
+      });
+
+      return () => {
+        if (unsubscribeInvites) unsubscribeInvites();
+      };
+    }
+  }, [user]);
 
   const saveToHistory = (game) => {
     if (user === 'guest' || !user) {
@@ -512,7 +570,7 @@ const updateQuickAmount = (index, value) => {
 
   const createGameHandler = async () => {
     if (!playerName.trim()) return;
-    
+
     try {
       const player = {
         id: Date.now().toString(),
@@ -524,7 +582,7 @@ const updateQuickAmount = (index, value) => {
         finalChipsCents: null,
         netResultCents: 0
       };
-      
+
       const gameData = {
         hostId: player.id,
         hostName: playerName,
@@ -533,20 +591,36 @@ const updateQuickAmount = (index, value) => {
         players: [player],
         status: 'lobby'
       };
-      
+
       const { gameId: newGameId, code } = await createGame(gameData);
-      
+
+      // Send game invites to selected friends
+      if (inviteSelectedFriends.length > 0) {
+        try {
+          await sendGameInvite(
+            inviteSelectedFriends,
+            code,
+            sessionName || 'Poker Game',
+            playerName
+          );
+        } catch (error) {
+          console.error('Error sending invites:', error);
+          // Don't fail the game creation if invites fail
+        }
+      }
+
       setGameId(newGameId);
       setGameCode(code);
       setCurrentPlayer(player);
       setPlayers([player]);
       setScreen('lobby');
-      
+      setInviteSelectedFriends([]); // Clear selected friends
+
       const unsub = subscribeToGame(newGameId, (gameData) => {
         setPlayers(gameData.players || []);
       });
       setUnsubscribe(() => unsub);
-      
+
     } catch (error) {
       console.error('Error creating game:', error);
       alert('Failed to create game. Please try again.');
@@ -814,6 +888,22 @@ const updateQuickAmount = (index, value) => {
                   <button
                     onClick={() => {
                       setShowProfileMenu(false);
+                      setScreen('friends');
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#D4AF37]/10 rounded-xl transition-all duration-200 text-left text-[#CBD5E1] hover:text-[#F8FAFC] relative"
+                  >
+                    <UserPlus className="w-5 h-5" />
+                    Friends
+                    {pendingRequests.length > 0 && (
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 bg-[#D4AF37] text-[#0A0E14] text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                        {pendingRequests.length}
+                      </span>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setShowProfileMenu(false);
                       setScreen('settings');
                     }}
                     className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#D4AF37]/10 rounded-xl transition-all duration-200 text-left text-[#CBD5E1] hover:text-[#F8FAFC]"
@@ -879,6 +969,45 @@ const updateQuickAmount = (index, value) => {
             </div>
           </div>
 
+          {/* Game Invites */}
+          {gameInvites.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-[#D4AF37] mb-3 uppercase tracking-wide">Game Invites</h3>
+              <div className="space-y-2">
+                {gameInvites.map(invite => (
+                  <PremiumCard key={invite.id} className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="font-semibold text-[#F8FAFC]">{invite.gameName}</div>
+                        <div className="text-sm text-[#64748B]">
+                          From: {invite.fromUserName} • Code: <span className="text-[#D4AF37] font-mono">{invite.gameCode}</span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            setInputCode(invite.gameCode);
+                            setScreen('join');
+                            dismissGameInvite(invite.id);
+                          }}
+                          className="bg-gradient-to-r from-[#D4AF37] to-[#C9A942] text-[#0A0E14] font-semibold py-2 px-4 rounded-xl hover:shadow-lg transition-all duration-200 text-sm"
+                        >
+                          Join
+                        </button>
+                        <button
+                          onClick={() => dismissGameInvite(invite.id)}
+                          className="text-[#64748B] hover:text-[#EF4444] p-2"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  </PremiumCard>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Stats Cards */}
           {stats.totalGames > 0 && (
             <div className="mb-8">
@@ -939,6 +1068,19 @@ const updateQuickAmount = (index, value) => {
 
           {/* Navigation Grid */}
           <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => setScreen('friends')}
+              className="bg-transparent border border-white/10 text-[#CBD5E1] font-medium py-3.5 px-4 rounded-xl hover:bg-white/5 hover:border-white/20 transition-all duration-200 flex flex-col items-center justify-center gap-2 relative"
+            >
+              <UserPlus size={18} strokeWidth={2} />
+              <span className="text-xs">Friends</span>
+              {pendingRequests.length > 0 && (
+                <span className="absolute top-2 right-2 bg-[#D4AF37] text-[#0A0E14] text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {pendingRequests.length}
+                </span>
+              )}
+            </button>
+
             <button
               onClick={() => setScreen('history')}
               className="bg-transparent border border-white/10 text-[#CBD5E1] font-medium py-3.5 px-4 rounded-xl hover:bg-white/5 hover:border-white/20 transition-all duration-200 flex flex-col items-center justify-center gap-2"
@@ -1021,12 +1163,67 @@ const updateQuickAmount = (index, value) => {
             </div>
           </PremiumCard>
 
+          {/* Invite Friends */}
+          {friends.length > 0 && (
+            <PremiumCard className="p-6 mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-[#CBD5E1] text-sm font-medium uppercase tracking-wide">
+                  Invite Friends
+                </label>
+                <span className="text-xs text-[#64748B]">
+                  {inviteSelectedFriends.length} selected
+                </span>
+              </div>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {friends.map(friend => (
+                  <button
+                    key={friend.id}
+                    onClick={() => {
+                      if (inviteSelectedFriends.includes(friend.id)) {
+                        setInviteSelectedFriends(inviteSelectedFriends.filter(id => id !== friend.id));
+                      } else {
+                        setInviteSelectedFriends([...inviteSelectedFriends, friend.id]);
+                      }
+                    }}
+                    className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 ${
+                      inviteSelectedFriends.includes(friend.id)
+                        ? 'bg-[#D4AF37]/10 border-[#D4AF37]'
+                        : 'bg-[#1E2433] border-white/10 hover:border-white/20'
+                    }`}
+                  >
+                    <div className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
+                      inviteSelectedFriends.includes(friend.id)
+                        ? 'border-[#D4AF37] bg-[#D4AF37]'
+                        : 'border-[#64748B]'
+                    }`}>
+                      {inviteSelectedFriends.includes(friend.id) && (
+                        <Check size={14} className="text-[#0A0E14]" strokeWidth={3} />
+                      )}
+                    </div>
+                    <div className="w-8 h-8 bg-gradient-to-br from-[#D4AF37] to-[#C9A942] rounded-full flex items-center justify-center font-bold text-xs text-[#0A0E14]">
+                      {friend.displayName?.[0]?.toUpperCase() || friend.email?.[0]?.toUpperCase() || 'F'}
+                    </div>
+                    <div className="flex-1 text-left">
+                      <div className="text-sm font-semibold text-[#F8FAFC]">{friend.displayName || 'Player'}</div>
+                      <div className="text-xs text-[#64748B]">{friend.email}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+              {inviteSelectedFriends.length > 0 && (
+                <div className="mt-3 text-xs text-[#D4AF37] bg-[#D4AF37]/10 p-2 rounded-lg">
+                  Selected friends will receive an in-app notification with the game code
+                </div>
+              )}
+            </PremiumCard>
+          )}
+
           <div className="space-y-3">
             <PrimaryButton
               onClick={createGameHandler}
               disabled={!playerName.trim()}
             >
-              Create Game
+              Create Game {inviteSelectedFriends.length > 0 && `& Invite ${inviteSelectedFriends.length}`}
             </PrimaryButton>
 
             <GhostButton onClick={resetApp}>
@@ -2314,6 +2511,626 @@ if (screen === 'settings') {
         <button onClick={() => setScreen('home')} className="w-full bg-[#1E2433] hover:bg-[#252B3D] text-[#D4AF37] border border-white/10 hover:border-[#D4AF37]/50 py-3 rounded-xl mt-6 font-semibold transition-all duration-200">
           Back
         </button>
+      </div>
+    </div>
+  );
+}
+
+// Friends Screen
+if (screen === 'friends') {
+  return (
+    <div className="min-h-screen bg-[#0A0E14] text-[#F8FAFC] p-6 relative overflow-hidden">
+      <div className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)',
+          backgroundSize: '48px 48px'
+        }}
+      />
+
+      <div className="max-w-4xl mx-auto pt-8 relative z-10">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-3xl font-bold text-[#D4AF37]">Friends</h2>
+          <button
+            onClick={() => setScreen('home')}
+            className="bg-[#1E2433] hover:bg-[#252B3D] text-[#D4AF37] border border-white/10 hover:border-[#D4AF37]/50 px-4 py-2 rounded-xl transition-all duration-200"
+          >
+            Back
+          </button>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setFriendsTab('friends')}
+            className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-200 ${
+              friendsTab === 'friends'
+                ? 'bg-gradient-to-r from-[#D4AF37] to-[#C9A942] text-[#0A0E14]'
+                : 'bg-[#1E2433] text-[#CBD5E1] border border-white/10 hover:border-white/20'
+            }`}
+          >
+            Friends ({friends.length})
+          </button>
+          <button
+            onClick={() => setFriendsTab('requests')}
+            className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-200 relative ${
+              friendsTab === 'requests'
+                ? 'bg-gradient-to-r from-[#D4AF37] to-[#C9A942] text-[#0A0E14]'
+                : 'bg-[#1E2433] text-[#CBD5E1] border border-white/10 hover:border-white/20'
+            }`}
+          >
+            Requests
+            {pendingRequests.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-[#EF4444] text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                {pendingRequests.length}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setFriendsTab('search')}
+            className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-200 ${
+              friendsTab === 'search'
+                ? 'bg-gradient-to-r from-[#D4AF37] to-[#C9A942] text-[#0A0E14]'
+                : 'bg-[#1E2433] text-[#CBD5E1] border border-white/10 hover:border-white/20'
+            }`}
+          >
+            Add Friend
+          </button>
+        </div>
+
+        {/* Friends List Tab */}
+        {friendsTab === 'friends' && (
+          <div className="space-y-3">
+            {friends.length === 0 ? (
+              <div className="text-center py-12 bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl border border-white/10">
+                <UserPlus size={48} className="mx-auto mb-4 text-[#D4AF37]/50" />
+                <p className="text-[#64748B] mb-2">No friends yet</p>
+                <p className="text-sm text-[#64748B]/70">Add friends to play together and compare stats!</p>
+                <button
+                  onClick={() => setFriendsTab('search')}
+                  className="mt-4 bg-gradient-to-r from-[#D4AF37] to-[#C9A942] text-[#0A0E14] font-semibold py-2 px-6 rounded-xl hover:shadow-[0_6px_24px_rgba(212,175,55,0.4)] transition-all duration-200"
+                >
+                  Add Your First Friend
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="mb-4">
+                  <SecondaryButton
+                    icon={Trophy}
+                    onClick={() => setScreen('friend-leaderboard')}
+                  >
+                    Friend Leaderboard
+                  </SecondaryButton>
+                </div>
+                {friends.map(friend => (
+                  <PremiumCard key={friend.id} className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div
+                        className="flex items-center gap-3 flex-1 cursor-pointer"
+                        onClick={() => {
+                          setSelectedFriend(friend);
+                          setScreen('friend-profile');
+                        }}
+                      >
+                        <div className="w-12 h-12 bg-gradient-to-br from-[#D4AF37] to-[#C9A942] rounded-full flex items-center justify-center font-bold text-[#0A0E14]">
+                          {friend.displayName?.[0]?.toUpperCase() || friend.email?.[0]?.toUpperCase() || 'F'}
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-semibold text-[#F8FAFC]">{friend.displayName || 'Player'}</div>
+                          <div className="text-sm text-[#64748B]">{friend.email}</div>
+                          {friend.stats && (
+                            <div className="text-xs text-[#D4AF37] mt-1">
+                              {friend.stats.totalGames || 0} games • {friend.stats.winRate || 0}% win rate
+                            </div>
+                          )}
+                        </div>
+                        <ArrowRight className="text-[#64748B]" size={20} />
+                      </div>
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          if (window.confirm(`Remove ${friend.displayName || friend.email} from friends?`)) {
+                            try {
+                              await removeFriend(friend.id);
+                            } catch (error) {
+                              alert('Error removing friend: ' + error.message);
+                            }
+                          }
+                        }}
+                        className="ml-4 text-[#EF4444] hover:text-[#EF4444]/80 p-2"
+                      >
+                        <X size={20} />
+                      </button>
+                    </div>
+                  </PremiumCard>
+                ))}
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Requests Tab */}
+        {friendsTab === 'requests' && (
+          <div className="space-y-4">
+            {/* Received Requests */}
+            <div>
+              <h3 className="text-lg font-semibold text-[#D4AF37] mb-3">Received Requests</h3>
+              {pendingRequests.length === 0 ? (
+                <div className="text-center py-8 bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl border border-white/10">
+                  <p className="text-[#64748B]">No pending requests</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {pendingRequests.map(request => (
+                    <PremiumCard key={request.id} className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 bg-gradient-to-br from-[#D4AF37] to-[#C9A942] rounded-full flex items-center justify-center font-bold text-[#0A0E14]">
+                            {request.displayName?.[0]?.toUpperCase() || request.email?.[0]?.toUpperCase() || 'F'}
+                          </div>
+                          <div>
+                            <div className="font-semibold text-[#F8FAFC]">{request.displayName || 'Player'}</div>
+                            <div className="text-sm text-[#64748B]">{request.email}</div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={async () => {
+                              try {
+                                await acceptFriendRequest(request.id);
+                              } catch (error) {
+                                alert('Error accepting request: ' + error.message);
+                              }
+                            }}
+                            className="bg-gradient-to-r from-[#10B981] to-[#059669] text-white font-semibold py-2 px-4 rounded-xl hover:shadow-lg transition-all duration-200"
+                          >
+                            Accept
+                          </button>
+                          <button
+                            onClick={async () => {
+                              try {
+                                await rejectFriendRequest(request.id);
+                              } catch (error) {
+                                alert('Error rejecting request: ' + error.message);
+                              }
+                            }}
+                            className="bg-[#EF4444] text-white font-semibold py-2 px-4 rounded-xl hover:bg-[#DC2626] transition-all duration-200"
+                          >
+                            Decline
+                          </button>
+                        </div>
+                      </div>
+                    </PremiumCard>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Sent Requests */}
+            <div>
+              <h3 className="text-lg font-semibold text-[#D4AF37] mb-3">Sent Requests</h3>
+              {sentRequests.length === 0 ? (
+                <div className="text-center py-8 bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl border border-white/10">
+                  <p className="text-[#64748B]">No sent requests</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {sentRequests.map(request => (
+                    <PremiumCard key={request.id} className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 bg-gradient-to-br from-[#D4AF37] to-[#C9A942] rounded-full flex items-center justify-center font-bold text-[#0A0E14]">
+                            {request.displayName?.[0]?.toUpperCase() || request.email?.[0]?.toUpperCase() || 'F'}
+                          </div>
+                          <div>
+                            <div className="font-semibold text-[#F8FAFC]">{request.displayName || 'Player'}</div>
+                            <div className="text-sm text-[#64748B]">{request.email}</div>
+                            <div className="text-xs text-[#F59E0B] mt-1">Pending...</div>
+                          </div>
+                        </div>
+                        <button
+                          onClick={async () => {
+                            try {
+                              await cancelFriendRequest(request.id);
+                            } catch (error) {
+                              alert('Error canceling request: ' + error.message);
+                            }
+                          }}
+                          className="text-[#EF4444] hover:text-[#EF4444]/80 font-semibold py-2 px-4 rounded-xl border border-[#EF4444] hover:bg-[#EF4444]/10 transition-all duration-200"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </PremiumCard>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Search Tab */}
+        {friendsTab === 'search' && (
+          <div>
+            <div className="mb-6">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#64748B]" size={20} />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={async (e) => {
+                    if (e.key === 'Enter' && searchQuery.trim()) {
+                      try {
+                        const results = await searchUsers(searchQuery);
+                        setSearchResults(results);
+                      } catch (error) {
+                        alert('Error searching: ' + error.message);
+                      }
+                    }
+                  }}
+                  placeholder="Search by email or name..."
+                  className="w-full bg-[#1E2433] border border-white/10 text-[#F8FAFC] rounded-xl py-3 pl-12 pr-4 focus:outline-none focus:border-[#D4AF37]/50 transition-all duration-200"
+                />
+              </div>
+              <button
+                onClick={async () => {
+                  if (!searchQuery.trim()) return;
+                  try {
+                    const results = await searchUsers(searchQuery);
+                    setSearchResults(results);
+                  } catch (error) {
+                    alert('Error searching: ' + error.message);
+                  }
+                }}
+                className="w-full mt-3 bg-gradient-to-r from-[#D4AF37] to-[#C9A942] text-[#0A0E14] font-semibold py-3 rounded-xl hover:shadow-[0_6px_24px_rgba(212,175,55,0.4)] transition-all duration-200"
+              >
+                Search
+              </button>
+            </div>
+
+            {/* Add by Email Shortcut */}
+            <div className="mb-6">
+              <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-xl p-4 border border-white/10">
+                <h3 className="text-sm font-semibold text-[#D4AF37] mb-3">Add Friend by Email</h3>
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    const email = e.target.elements.email.value;
+                    if (!email.trim()) return;
+                    try {
+                      await sendFriendRequest(email);
+                      alert('Friend request sent!');
+                      e.target.reset();
+                      setSearchQuery('');
+                      setSearchResults([]);
+                    } catch (error) {
+                      alert(error.message);
+                    }
+                  }}
+                  className="flex gap-2"
+                >
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="friend@example.com"
+                    className="flex-1 bg-[#0A0E14] border border-white/10 text-[#F8FAFC] rounded-xl py-2 px-4 focus:outline-none focus:border-[#D4AF37]/50"
+                  />
+                  <button
+                    type="submit"
+                    className="bg-gradient-to-r from-[#D4AF37] to-[#C9A942] text-[#0A0E14] font-semibold py-2 px-6 rounded-xl hover:shadow-lg transition-all duration-200"
+                  >
+                    Send
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            {/* Search Results */}
+            {searchResults.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold text-[#D4AF37] mb-3">Search Results</h3>
+                <div className="space-y-3">
+                  {searchResults.map(result => {
+                    const isFriend = friends.some(f => f.id === result.id);
+                    const isPending = pendingRequests.some(r => r.id === result.id);
+                    const isSent = sentRequests.some(r => r.id === result.id);
+
+                    return (
+                      <PremiumCard key={result.id} className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 bg-gradient-to-br from-[#D4AF37] to-[#C9A942] rounded-full flex items-center justify-center font-bold text-[#0A0E14]">
+                              {result.displayName?.[0]?.toUpperCase() || result.email?.[0]?.toUpperCase() || 'U'}
+                            </div>
+                            <div>
+                              <div className="font-semibold text-[#F8FAFC]">{result.displayName || 'Player'}</div>
+                              <div className="text-sm text-[#64748B]">{result.email}</div>
+                            </div>
+                          </div>
+                          {isFriend ? (
+                            <span className="text-[#10B981] font-semibold">Friends ✓</span>
+                          ) : isPending ? (
+                            <button
+                              onClick={async () => {
+                                try {
+                                  await acceptFriendRequest(result.id);
+                                  setSearchResults([]);
+                                } catch (error) {
+                                  alert('Error: ' + error.message);
+                                }
+                              }}
+                              className="bg-gradient-to-r from-[#10B981] to-[#059669] text-white font-semibold py-2 px-4 rounded-xl hover:shadow-lg transition-all duration-200"
+                            >
+                              Accept Request
+                            </button>
+                          ) : isSent ? (
+                            <span className="text-[#F59E0B] font-semibold">Request Sent</span>
+                          ) : (
+                            <button
+                              onClick={async () => {
+                                try {
+                                  await sendFriendRequest(result.email);
+                                  alert('Friend request sent!');
+                                  setSearchResults([]);
+                                  setSearchQuery('');
+                                } catch (error) {
+                                  alert(error.message);
+                                }
+                              }}
+                              className="bg-gradient-to-r from-[#D4AF37] to-[#C9A942] text-[#0A0E14] font-semibold py-2 px-4 rounded-xl hover:shadow-lg transition-all duration-200"
+                            >
+                              Add Friend
+                            </button>
+                          )}
+                        </div>
+                      </PremiumCard>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Friend Profile Screen
+if (screen === 'friend-profile' && selectedFriend) {
+  useEffect(() => {
+    const loadFriendStats = async () => {
+      try {
+        const stats = await getFriendStats(selectedFriend.id);
+        setFriendStats(stats);
+      } catch (error) {
+        console.error('Error loading friend stats:', error);
+      }
+    };
+    loadFriendStats();
+  }, [selectedFriend]);
+
+  return (
+    <div className="min-h-screen bg-[#0A0E14] text-[#F8FAFC] p-6 relative overflow-hidden">
+      <div className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)',
+          backgroundSize: '48px 48px'
+        }}
+      />
+
+      <div className="max-w-4xl mx-auto pt-8 relative z-10">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-3xl font-bold text-[#D4AF37]">Friend Profile</h2>
+          <button
+            onClick={() => {
+              setScreen('friends');
+              setFriendStats(null);
+            }}
+            className="bg-[#1E2433] hover:bg-[#252B3D] text-[#D4AF37] border border-white/10 hover:border-[#D4AF37]/50 px-4 py-2 rounded-xl transition-all duration-200"
+          >
+            Back
+          </button>
+        </div>
+
+        {/* Profile Header */}
+        <PremiumCard className="p-6 mb-6">
+          <div className="flex items-center gap-4">
+            <div className="w-20 h-20 bg-gradient-to-br from-[#D4AF37] to-[#C9A942] rounded-full flex items-center justify-center font-bold text-3xl text-[#0A0E14]">
+              {friendStats?.displayName?.[0]?.toUpperCase() || 'F'}
+            </div>
+            <div className="flex-1">
+              <h3 className="text-2xl font-bold text-[#F8FAFC]">{friendStats?.displayName || 'Player'}</h3>
+              <p className="text-[#64748B]">{friendStats?.email}</p>
+            </div>
+          </div>
+        </PremiumCard>
+
+        {/* Stats */}
+        {friendStats && (
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <StatCard
+                label="Total Games"
+                value={friendStats.totalGames}
+              />
+              <StatCard
+                label="Games Won"
+                value={friendStats.gamesWon}
+              />
+              <StatCard
+                label="Win Rate"
+                value={`${friendStats.winRate}%`}
+              />
+              <StatCard
+                label="Total Winnings"
+                value={`$${friendStats.totalWinnings.toFixed(2)}`}
+                valueColor={friendStats.totalWinnings >= 0 ? 'text-[#10B981]' : 'text-[#EF4444]'}
+              />
+            </div>
+
+            {/* Game History */}
+            <div>
+              <h3 className="text-xl font-semibold text-[#D4AF37] mb-4">Recent Games</h3>
+              {friendStats.gameHistory && friendStats.gameHistory.length > 0 ? (
+                <div className="space-y-3">
+                  {friendStats.gameHistory.map((game, idx) => {
+                    const player = game.players?.find(p => p.id === selectedFriend.id);
+                    const result = player ? (player.cashout || 0) - (player.buyin || 0) : 0;
+
+                    return (
+                      <PremiumCard key={game.id || idx} className="p-4">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <div className="font-semibold text-[#F8FAFC]">
+                              {game.sessionName || `Game ${new Date(game.completedAt?.toDate?.() || game.date).toLocaleDateString()}`}
+                            </div>
+                            <div className="text-sm text-[#64748B]">
+                              {game.players?.length || 0} players • Buy-in: ${((player?.buyin || 0) / 100).toFixed(2)}
+                            </div>
+                          </div>
+                          <div className={`text-xl font-bold ${result >= 0 ? 'text-[#10B981]' : 'text-[#EF4444]'}`}>
+                            {result >= 0 ? '+' : ''}${(result / 100).toFixed(2)}
+                          </div>
+                        </div>
+                      </PremiumCard>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-12 bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl border border-white/10">
+                  <p className="text-[#64748B]">No game history available</p>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {!friendStats && (
+          <div className="text-center py-12">
+            <LoadingSpinner />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Friend Leaderboard Screen
+if (screen === 'friend-leaderboard') {
+  const [friendLeaderboard, setFriendLeaderboard] = React.useState([]);
+  const [loadingLeaderboard, setLoadingLeaderboard] = React.useState(true);
+
+  useEffect(() => {
+    const loadLeaderboard = async () => {
+      setLoadingLeaderboard(true);
+      try {
+        const leaderboardData = await Promise.all(
+          friends.map(async (friend) => {
+            try {
+              const stats = await getFriendStats(friend.id);
+              return {
+                id: friend.id,
+                displayName: stats.displayName,
+                email: stats.email,
+                totalGames: stats.totalGames,
+                gamesWon: stats.gamesWon,
+                winRate: parseFloat(stats.winRate),
+                totalWinnings: stats.totalWinnings
+              };
+            } catch (error) {
+              console.error(`Error loading stats for ${friend.id}:`, error);
+              return null;
+            }
+          })
+        );
+
+        const validData = leaderboardData.filter(d => d !== null);
+        validData.sort((a, b) => b.totalWinnings - a.totalWinnings);
+        setFriendLeaderboard(validData);
+      } catch (error) {
+        console.error('Error loading leaderboard:', error);
+      } finally {
+        setLoadingLeaderboard(false);
+      }
+    };
+
+    loadLeaderboard();
+  }, [friends]);
+
+  return (
+    <div className="min-h-screen bg-[#0A0E14] text-[#F8FAFC] p-6 relative overflow-hidden">
+      <div className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)',
+          backgroundSize: '48px 48px'
+        }}
+      />
+
+      <div className="max-w-4xl mx-auto pt-8 relative z-10">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-3xl font-bold text-[#D4AF37] flex items-center gap-2">
+            <Trophy className="text-[#D4AF37]" size={32} />
+            Friend Leaderboard
+          </h2>
+          <button
+            onClick={() => setScreen('friends')}
+            className="bg-[#1E2433] hover:bg-[#252B3D] text-[#D4AF37] border border-white/10 hover:border-[#D4AF37]/50 px-4 py-2 rounded-xl transition-all duration-200"
+          >
+            Back
+          </button>
+        </div>
+
+        {loadingLeaderboard ? (
+          <div className="text-center py-12">
+            <LoadingSpinner />
+          </div>
+        ) : friendLeaderboard.length === 0 ? (
+          <div className="text-center py-12 bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl border border-white/10">
+            <Trophy size={48} className="mx-auto mb-4 text-[#D4AF37]/50" />
+            <p className="text-[#64748B]">No leaderboard data available</p>
+            <p className="text-sm text-[#64748B]/70 mt-2">Your friends need to play some games first!</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {friendLeaderboard.map((friend, index) => (
+              <PremiumCard
+                key={friend.id}
+                className={`p-4 ${index < 3 ? 'border-2 border-[#D4AF37]/50' : ''}`}
+              >
+                <div className="flex items-center gap-4">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl ${
+                    index === 0 ? 'bg-gradient-to-br from-[#FFD700] to-[#FFA500] text-[#0A0E14]' :
+                    index === 1 ? 'bg-gradient-to-br from-[#C0C0C0] to-[#A8A8A8] text-[#0A0E14]' :
+                    index === 2 ? 'bg-gradient-to-br from-[#CD7F32] to-[#B8860B] text-[#0A0E14]' :
+                    'bg-gradient-to-br from-[#D4AF37] to-[#C9A942] text-[#0A0E14]'
+                  }`}>
+                    {index + 1}
+                  </div>
+                  <div
+                    className="flex-1 cursor-pointer"
+                    onClick={() => {
+                      const friendObj = friends.find(f => f.id === friend.id);
+                      if (friendObj) {
+                        setSelectedFriend(friendObj);
+                        setScreen('friend-profile');
+                      }
+                    }}
+                  >
+                    <div className="font-semibold text-[#F8FAFC]">{friend.displayName}</div>
+                    <div className="text-sm text-[#64748B]">
+                      {friend.totalGames} games • {friend.winRate}% win rate
+                    </div>
+                  </div>
+                  <div className={`text-2xl font-bold ${friend.totalWinnings >= 0 ? 'text-[#10B981]' : 'text-[#EF4444]'}`}>
+                    {friend.totalWinnings >= 0 ? '+' : ''}${friend.totalWinnings.toFixed(2)}
+                  </div>
+                </div>
+              </PremiumCard>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
