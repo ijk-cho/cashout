@@ -140,30 +140,32 @@ const ProfilePage = ({ user, gameHistory, onUpdateProfile, onBack }) => {
   const favoriteGroup = gameHistory.find(g => g.sessionName)?.sessionName || 'None yet';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-poker-green-dark via-poker-green to-poker-green-light text-poker-cream p-6">
-      <div className="max-w-4xl mx-auto pt-8">
+    <div className="min-h-screen bg-[#0A0E14] text-[#F8FAFC] p-6 relative overflow-hidden">
+      <div className="absolute inset-0 opacity-5 premium-pattern"></div>
+
+      <div className="max-w-4xl mx-auto pt-8 relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-3xl font-bold font-serif text-poker-gold">Your Profile</h2>
-          <button onClick={onBack} className="bg-poker-green-light/50 backdrop-blur-sm text-poker-gold border-2 border-poker-gold/30 hover:border-poker-gold/50 px-6 py-2 rounded-card-lg transition font-semibold shadow-lg">
+          <h2 className="text-3xl font-bold font-serif text-[#D4AF37]">Your Profile</h2>
+          <button onClick={onBack} className="bg-[#1E2433] hover:bg-[#252B3D] text-[#D4AF37] border border-white/10 hover:border-[#D4AF37]/50 px-6 py-2 rounded-xl transition-all duration-200 font-semibold shadow-lg">
             Back
           </button>
         </div>
 
         {/* User Info Section */}
-        <div className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-6 mb-6 border-2 border-poker-gold/30 shadow-2xl">
+        <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl p-6 mb-6 border border-white/10 shadow-2xl">
           <div className="flex items-start gap-6">
             {/* Profile Picture */}
             <div className="relative">
-              <div className="w-24 h-24 bg-gradient-to-br from-poker-burgundy to-poker-burgundy-dark rounded-full flex items-center justify-center font-bold text-4xl border-4 border-poker-gold/50 shadow-xl">
+              <div className="w-24 h-24 bg-gradient-to-br from-[#D4AF37] to-[#C9A942] rounded-full flex items-center justify-center font-bold text-4xl shadow-[0_8px_32px_rgba(212,175,55,0.3)]">
                 {user.photoURL ? (
                   <img src={user.photoURL} alt="Profile" className="w-full h-full rounded-full object-cover" />
                 ) : (
-                  <span className="text-poker-gold">{(displayName || user.email)[0].toUpperCase()}</span>
+                  <span className="text-[#0A0E14]">{(displayName || user.email)[0].toUpperCase()}</span>
                 )}
               </div>
-              <label className="absolute bottom-0 right-0 bg-poker-gold hover:bg-poker-gold-light rounded-full p-2 cursor-pointer transition shadow-lg">
-                <Upload size={16} className="text-poker-green" />
+              <label className="absolute bottom-0 right-0 bg-gradient-to-br from-[#D4AF37] to-[#C9A942] hover:shadow-[0_6px_24px_rgba(212,175,55,0.4)] rounded-full p-2 cursor-pointer transition-all duration-200 shadow-lg">
+                <Upload size={16} className="text-[#0A0E14]" />
                 <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
               </label>
             </div>
@@ -176,115 +178,115 @@ const ProfilePage = ({ user, gameHistory, onUpdateProfile, onBack }) => {
                     type="text"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
-                    className="flex-1 bg-poker-green text-poker-cream px-4 py-2 rounded-card border border-poker-gold/30 focus:outline-none focus:ring-2 focus:ring-poker-gold"
+                    className="flex-1 bg-[#12161F] text-[#F8FAFC] px-4 py-2 rounded-xl border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50 focus:border-[#D4AF37]/50 transition-all duration-200"
                   />
-                  <button onClick={handleSaveName} className="bg-gradient-to-r from-poker-burgundy to-poker-burgundy-dark hover:from-poker-burgundy-dark hover:to-poker-burgundy text-poker-cream px-6 py-2 rounded-card-lg font-semibold border-2 border-poker-gold/50 transition shadow-lg">Save</button>
-                  <button onClick={() => setIsEditingName(false)} className="bg-poker-green-light/50 text-poker-grey hover:text-poker-cream px-4 py-2 rounded-card-lg border border-poker-gold/20 transition">Cancel</button>
+                  <button onClick={handleSaveName} className="bg-gradient-to-r from-[#D4AF37] to-[#C9A942] hover:shadow-[0_6px_24px_rgba(212,175,55,0.4)] text-[#0A0E14] px-6 py-2 rounded-xl font-semibold transition-all duration-200 shadow-lg">Save</button>
+                  <button onClick={() => setIsEditingName(false)} className="bg-[#1E2433] text-[#CBD5E1] hover:text-[#F8FAFC] px-4 py-2 rounded-xl border border-white/10 transition-all duration-200">Cancel</button>
                 </div>
               ) : (
                 <div className="flex items-center gap-3 mb-2">
-                  <h3 className="text-2xl font-bold font-serif text-poker-cream">{displayName || 'Player'}</h3>
-                  <button onClick={() => setIsEditingName(true)} className="text-poker-gold hover:text-poker-gold-light text-sm underline transition">Edit</button>
+                  <h3 className="text-2xl font-bold font-serif text-[#F8FAFC]">{displayName || 'Player'}</h3>
+                  <button onClick={() => setIsEditingName(true)} className="text-[#D4AF37] hover:text-[#C9A942] text-sm underline transition-colors duration-200">Edit</button>
                 </div>
               )}
-              <p className="text-poker-gold mb-1">{user.email}</p>
-              <p className="text-poker-grey text-sm">Member since {memberSince}</p>
-              <p className="text-poker-grey text-sm mt-2">Favorite Group: <span className="text-poker-gold">{favoriteGroup}</span></p>
+              <p className="text-[#D4AF37] mb-1">{user.email}</p>
+              <p className="text-[#CBD5E1] text-sm">Member since {memberSince}</p>
+              <p className="text-[#CBD5E1] text-sm mt-2">Favorite Group: <span className="text-[#D4AF37]">{favoriteGroup}</span></p>
             </div>
           </div>
         </div>
 
         {/* Stats Dashboard */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-5 border-2 border-poker-gold/30 shadow-xl">
-            <div className="text-sm text-poker-gold mb-1 font-semibold">Total Games</div>
-            <div className="text-3xl font-bold text-poker-cream">{totalGames}</div>
+          <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl p-5 border border-white/10 shadow-xl">
+            <div className="text-sm text-[#D4AF37] mb-1 font-semibold">Total Games</div>
+            <div className="text-3xl font-bold text-[#F8FAFC]">{totalGames}</div>
           </div>
-          <div className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-5 border-2 border-poker-gold/30 shadow-xl">
-            <div className="text-sm text-poker-gold mb-1 font-semibold">Win/Loss Record</div>
-            <div className="text-3xl font-bold text-poker-cream">{wins.length}W - {losses.length}L</div>
+          <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl p-5 border border-white/10 shadow-xl">
+            <div className="text-sm text-[#D4AF37] mb-1 font-semibold">Win/Loss Record</div>
+            <div className="text-3xl font-bold text-[#F8FAFC]">{wins.length}W - {losses.length}L</div>
           </div>
-          <div className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-5 border-2 border-poker-gold/30 shadow-xl">
-            <div className="text-sm text-poker-gold mb-1 font-semibold">Win Rate</div>
-            <div className="text-3xl font-bold text-poker-gold-light">{winRate}%</div>
+          <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl p-5 border border-white/10 shadow-xl">
+            <div className="text-sm text-[#D4AF37] mb-1 font-semibold">Win Rate</div>
+            <div className="text-3xl font-bold text-[#D4AF37]">{winRate}%</div>
           </div>
-          <div className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-5 border-2 border-poker-gold/30 shadow-xl">
-            <div className="text-sm text-poker-gold mb-1 font-semibold">Total Profit/Loss</div>
-            <div className={`text-3xl font-bold ${totalProfit >= 0 ? 'text-poker-gold-light' : 'text-poker-burgundy-light'}`}>
+          <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl p-5 border border-white/10 shadow-xl">
+            <div className="text-sm text-[#D4AF37] mb-1 font-semibold">Total Profit/Loss</div>
+            <div className={`text-3xl font-bold ${totalProfit >= 0 ? 'text-[#10B981]' : 'text-[#EF4444]'}`}>
               {totalProfit >= 0 ? '+' : ''}${totalProfit.toFixed(2)}
             </div>
           </div>
-          <div className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-5 border-2 border-poker-gold/30 shadow-xl">
-            <div className="text-sm text-poker-gold mb-1 font-semibold">Biggest Win</div>
-            <div className="text-3xl font-bold text-poker-gold-light">+${biggestWin.toFixed(2)}</div>
+          <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl p-5 border border-white/10 shadow-xl">
+            <div className="text-sm text-[#D4AF37] mb-1 font-semibold">Biggest Win</div>
+            <div className="text-3xl font-bold text-[#10B981]">+${biggestWin.toFixed(2)}</div>
           </div>
-          <div className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-5 border-2 border-poker-gold/30 shadow-xl">
-            <div className="text-sm text-poker-gold mb-1 font-semibold">Biggest Loss</div>
-            <div className="text-3xl font-bold text-poker-burgundy-light">${biggestLoss.toFixed(2)}</div>
+          <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl p-5 border border-white/10 shadow-xl">
+            <div className="text-sm text-[#D4AF37] mb-1 font-semibold">Biggest Loss</div>
+            <div className="text-3xl font-bold text-[#EF4444]">${biggestLoss.toFixed(2)}</div>
           </div>
         </div>
 
         {/* Additional Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-5 border-2 border-poker-gold/30 shadow-xl">
-            <div className="text-sm text-poker-gold mb-2 font-semibold">Average Buy-In</div>
-            <div className="text-2xl font-bold text-poker-cream">${avgBuyIn}</div>
+          <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl p-5 border border-white/10 shadow-xl">
+            <div className="text-sm text-[#D4AF37] mb-2 font-semibold">Average Buy-In</div>
+            <div className="text-2xl font-bold text-[#F8FAFC]">${avgBuyIn}</div>
           </div>
-          <div className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-5 border-2 border-poker-gold/30 shadow-xl">
-            <div className="text-sm text-poker-gold mb-2 font-semibold">Favorite Players</div>
+          <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl p-5 border border-white/10 shadow-xl">
+            <div className="text-sm text-[#D4AF37] mb-2 font-semibold">Favorite Players</div>
             {favoritePlayers.length > 0 ? (
               <div className="space-y-1">
                 {favoritePlayers.map(([name, count]) => (
-                  <div key={name} className="text-poker-cream text-sm font-medium">{name} <span className="text-poker-grey">({count} games)</span></div>
+                  <div key={name} className="text-[#F8FAFC] text-sm font-medium">{name} <span className="text-[#CBD5E1]">({count} games)</span></div>
                 ))}
               </div>
             ) : (
-              <div className="text-poker-grey text-sm">Play more games to see stats</div>
+              <div className="text-[#64748B] text-sm">Play more games to see stats</div>
             )}
           </div>
         </div>
 
         {/* Monthly Performance Chart */}
         {chartData.length > 0 && (
-          <div className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-6 mb-6 border-2 border-poker-gold/30 shadow-xl">
-            <h3 className="text-xl font-bold font-serif text-poker-gold mb-4">Monthly Performance</h3>
+          <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl p-6 mb-6 border border-white/10 shadow-xl">
+            <h3 className="text-xl font-bold font-serif text-[#D4AF37] mb-4">Monthly Performance</h3>
             <ResponsiveContainer width="100%" height={250}>
               <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#114C38" />
-                <XAxis dataKey="month" stroke="#FFD700" />
-                <YAxis stroke="#FFD700" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
+                <XAxis dataKey="month" stroke="#D4AF37" />
+                <YAxis stroke="#D4AF37" />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#0B3D2E', border: '2px solid #FFD700', borderRadius: '12px' }}
-                  labelStyle={{ color: '#FFD700', fontWeight: 'bold' }}
+                  contentStyle={{ backgroundColor: '#1E2433', border: '1px solid rgba(212, 175, 55, 0.3)', borderRadius: '12px' }}
+                  labelStyle={{ color: '#D4AF37', fontWeight: 'bold' }}
                 />
-                <Line type="monotone" dataKey="profit" stroke="#FFE44D" strokeWidth={3} />
+                <Line type="monotone" dataKey="profit" stroke="#D4AF37" strokeWidth={3} />
               </LineChart>
             </ResponsiveContainer>
           </div>
         )}
 
         {/* Achievements */}
-        <div className="bg-poker-green-light/80 backdrop-blur-sm rounded-card-lg p-6 border-2 border-poker-gold/30 shadow-xl">
-          <h3 className="text-xl font-bold font-serif text-poker-gold mb-4">Achievements</h3>
+        <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl p-6 border border-white/10 shadow-xl">
+          <h3 className="text-xl font-bold font-serif text-[#D4AF37] mb-4">Achievements</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {achievements.map(achievement => {
               const Icon = achievement.icon;
               return (
                 <div
                   key={achievement.id}
-                  className={`flex items-center gap-3 p-4 rounded-card border-2 transition ${
+                  className={`flex items-center gap-3 p-4 rounded-xl border transition-all duration-200 ${
                     achievement.unlocked
-                      ? 'bg-poker-green border-poker-gold/50 shadow-lg'
-                      : 'bg-poker-green-dark/50 border-poker-grey/20 opacity-50'
+                      ? 'bg-[#12161F] border-[#D4AF37]/50 shadow-lg'
+                      : 'bg-[#0A0E14]/50 border-white/5 opacity-50'
                   }`}
                 >
-                  <Icon className={`${achievement.unlocked ? achievement.color : 'text-poker-grey/50'}`} size={32} />
+                  <Icon className={`${achievement.unlocked ? achievement.color : 'text-[#64748B]'}`} size={32} />
                   <div>
-                    <div className="font-semibold text-poker-cream">{achievement.name}</div>
-                    <div className="text-xs text-poker-grey">{achievement.desc}</div>
+                    <div className="font-semibold text-[#F8FAFC]">{achievement.name}</div>
+                    <div className="text-xs text-[#CBD5E1]">{achievement.desc}</div>
                   </div>
                   {achievement.unlocked && (
-                    <div className="ml-auto text-poker-gold-light font-bold text-xl">✓</div>
+                    <div className="ml-auto text-[#D4AF37] font-bold text-xl">✓</div>
                   )}
                 </div>
               );

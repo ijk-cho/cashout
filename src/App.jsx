@@ -6,7 +6,7 @@ import ProfilePage from './ProfilePage';
 import InstallPrompt from './InstallPrompt';
 import UpdateNotification from './UpdateNotification';
 import IOSInstallGuide from './IOSInstallGuide';
-import { DollarSign, Users, Plus, Share2, Copy, Check, TrendingUp, History, ArrowRight } from 'lucide-react';
+import { DollarSign, Users, Plus, Share2, Copy, Check, TrendingUp, History, ArrowRight, Trophy } from 'lucide-react';
 import { createGame, getGameByCode, updateGame, subscribeToGame, removePlayer, updatePaymentStatus } from './gameService';
 import { soundManager } from './sounds';
 import {
@@ -967,7 +967,7 @@ const updateQuickAmount = (index, value) => {
               onClick={() => setScreen('leaderboards')}
               className="bg-transparent border border-white/10 text-[#CBD5E1] font-medium py-3.5 px-4 rounded-xl hover:bg-white/5 hover:border-white/20 transition-all duration-200 flex flex-col items-center justify-center gap-2"
             >
-              <span className="text-xl">🏆</span>
+              <Trophy size={20} />
               <span className="text-xs">Leaders</span>
             </button>
           </div>
@@ -1886,7 +1886,7 @@ if (screen === 'leaderboards') {
       
       <div className="max-w-4xl mx-auto pt-8 relative z-10">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-3xl font-serif font-bold text-[#D4AF37]">🏆 Leaderboards</h2>
+          <h2 className="text-3xl font-serif font-bold text-[#D4AF37]">Leaderboards</h2>
           <button onClick={() => setScreen('home')} className="bg-[#1E2433] hover:bg-[#252B3D] text-[#D4AF37] border border-white/10 hover:border-[#D4AF37]/50 px-4 py-2 rounded-xl transition-all duration-200">
             Back
           </button>
@@ -1945,24 +1945,26 @@ if (screen === 'leaderboards') {
 
 if (screen === 'settings') {
   return (
-    <div className="min-h-screen bg-[#0A0E14] text-white p-6">
-      <div className="max-w-md mx-auto pt-8">
-        <h2 className="text-3xl font-bold mb-6 text-[#D4AF37]">SETTINGS</h2>
-        
+    <div className="min-h-screen bg-[#0A0E14] text-[#F8FAFC] p-6 relative overflow-hidden">
+      <div className="absolute inset-0 opacity-5 premium-pattern"></div>
+
+      <div className="max-w-md mx-auto pt-8 relative z-10">
+        <h2 className="text-3xl font-serif font-bold mb-6 text-[#D4AF37]">Settings</h2>
+
         {/* Tab Navigation */}
-        <div className="flex gap-2 mb-6 bg-black/40 rounded-lg p-1">
+        <div className="flex gap-2 mb-6 bg-[#12161F] rounded-xl p-1 border border-white/10">
           <button
             onClick={() => setSettingsTab('account')}
-            className={`flex-1 py-2 rounded-lg transition ${
-              settingsTab === 'account' ? 'bg-amber-600 text-white' : 'text-[#D4AF37]'
+            className={`flex-1 py-2 rounded-xl transition-all duration-200 font-semibold ${
+              settingsTab === 'account' ? 'bg-gradient-to-r from-[#D4AF37] to-[#C9A942] text-[#0A0E14]' : 'text-[#CBD5E1] hover:text-[#F8FAFC]'
             }`}
           >
             Account
           </button>
           <button
             onClick={() => setSettingsTab('preferences')}
-            className={`flex-1 py-2 rounded-lg transition ${
-              settingsTab === 'preferences' ? 'bg-amber-600 text-white' : 'text-[#D4AF37]'
+            className={`flex-1 py-2 rounded-xl transition-all duration-200 font-semibold ${
+              settingsTab === 'preferences' ? 'bg-gradient-to-r from-[#D4AF37] to-[#C9A942] text-[#0A0E14]' : 'text-[#CBD5E1] hover:text-[#F8FAFC]'
             }`}
           >
             Preferences
@@ -1973,17 +1975,17 @@ if (screen === 'settings') {
         {settingsTab === 'account' && (
           <div className="space-y-4">
             {/* Display Name */}
-            <div className="bg-black/40 rounded-lg p-4 border border-amber-500/30">
-              <label className="block text-sm text-[#D4AF37] mb-2 font-semibold">DISPLAY NAME</label>
+            <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-xl p-4 border border-white/10">
+              <label className="block text-sm text-[#D4AF37] mb-2 font-semibold">Display Name</label>
               {!editingDisplayName ? (
                 <div className="flex items-center justify-between">
-                  <span className="text-white text-lg">{userSettings.displayName}</span>
+                  <span className="text-[#F8FAFC] text-lg">{userSettings.displayName}</span>
                   <button
                     onClick={() => {
                       setEditingDisplayName(true);
                       setNewDisplayName(userSettings.displayName);
                     }}
-                    className="px-3 py-1 bg-amber-600 hover:bg-amber-700 rounded text-white text-sm"
+                    className="px-3 py-1 bg-gradient-to-r from-[#D4AF37] to-[#C9A942] hover:shadow-[0_6px_24px_rgba(212,175,55,0.4)] rounded-xl text-white text-sm"
                   >
                     Edit
                   </button>
@@ -1994,11 +1996,11 @@ if (screen === 'settings') {
                     type="text"
                     value={newDisplayName}
                     onChange={(e) => setNewDisplayName(e.target.value)}
-                    className="w-full px-3 py-2 bg-green-900/50 border border-amber-500/20 rounded text-white"
+                    className="w-full px-3 py-2 bg-[#12161F] border border-white/10 rounded-xl text-white"
                     placeholder="Enter new display name"
                   />
                   <div className="flex gap-2">
-                    <button onClick={saveDisplayName} className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded text-white">
+                    <button onClick={saveDisplayName} className="px-4 py-2 bg-gradient-to-r from-[#10B981] to-[#059669] hover:shadow-[0_6px_24px_rgba(16,185,129,0.4)] rounded-xl text-white">
                       Save
                     </button>
                     <button
@@ -2006,7 +2008,7 @@ if (screen === 'settings') {
                         setEditingDisplayName(false);
                         setNewDisplayName('');
                       }}
-                      className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-white"
+                      className="px-4 py-2 bg-[#475569] hover:bg-[#64748B] rounded-xl text-white"
                     >
                       Cancel
                     </button>
@@ -2016,17 +2018,17 @@ if (screen === 'settings') {
             </div>
 
             {/* Email */}
-            <div className="bg-black/40 rounded-lg p-4 border border-amber-500/30">
-              <label className="block text-sm text-[#D4AF37] mb-2 font-semibold">EMAIL</label>
+            <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-xl p-4 border border-white/10">
+              <label className="block text-sm text-[#D4AF37] mb-2 font-semibold">Email</label>
               {!editingEmail ? (
                 <div className="flex items-center justify-between">
-                  <span className="text-white text-lg">{userSettings.email}</span>
+                  <span className="text-[#F8FAFC] text-lg">{userSettings.email}</span>
                   <button
                     onClick={() => {
                       setEditingEmail(true);
                       setNewEmail(userSettings.email);
                     }}
-                    className="px-3 py-1 bg-amber-600 hover:bg-amber-700 rounded text-white text-sm"
+                    className="px-3 py-1 bg-gradient-to-r from-[#D4AF37] to-[#C9A942] hover:shadow-[0_6px_24px_rgba(212,175,55,0.4)] rounded-xl text-white text-sm"
                   >
                     Edit
                   </button>
@@ -2037,18 +2039,18 @@ if (screen === 'settings') {
                     type="email"
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
-                    className="w-full px-3 py-2 bg-green-900/50 border border-amber-500/20 rounded text-white"
+                    className="w-full px-3 py-2 bg-[#12161F] border border-white/10 rounded-xl text-white"
                     placeholder="Enter new email"
                   />
                   <input
                     type="password"
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full px-3 py-2 bg-green-900/50 border border-amber-500/20 rounded text-white"
+                    className="w-full px-3 py-2 bg-[#12161F] border border-white/10 rounded-xl text-white"
                     placeholder="Current password (for re-auth)"
                   />
                   <div className="flex gap-2">
-                    <button onClick={saveEmail} className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded text-white">
+                    <button onClick={saveEmail} className="px-4 py-2 bg-gradient-to-r from-[#10B981] to-[#059669] hover:shadow-[0_6px_24px_rgba(16,185,129,0.4)] rounded-xl text-white">
                       Save
                     </button>
                     <button
@@ -2057,7 +2059,7 @@ if (screen === 'settings') {
                         setNewEmail('');
                         setCurrentPassword('');
                       }}
-                      className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-white"
+                      className="px-4 py-2 bg-[#475569] hover:bg-[#64748B] rounded-xl text-white"
                     >
                       Cancel
                     </button>
@@ -2067,14 +2069,14 @@ if (screen === 'settings') {
             </div>
 
             {/* Password */}
-            <div className="bg-black/40 rounded-lg p-4 border border-amber-500/30">
-              <label className="block text-sm text-[#D4AF37] mb-2 font-semibold">PASSWORD</label>
+            <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-xl p-4 border border-white/10">
+              <label className="block text-sm text-[#D4AF37] mb-2 font-semibold">Password</label>
               {!editingPassword ? (
                 <div className="flex items-center justify-between">
-                  <span className="text-white text-lg">••••••••</span>
+                  <span className="text-[#F8FAFC] text-lg">••••••••</span>
                   <button
                     onClick={() => setEditingPassword(true)}
-                    className="px-3 py-1 bg-amber-600 hover:bg-amber-700 rounded text-white text-sm"
+                    className="px-3 py-1 bg-gradient-to-r from-[#D4AF37] to-[#C9A942] hover:shadow-[0_6px_24px_rgba(212,175,55,0.4)] rounded-xl text-white text-sm"
                   >
                     Change
                   </button>
@@ -2085,25 +2087,25 @@ if (screen === 'settings') {
                     type="password"
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full px-3 py-2 bg-green-900/50 border border-amber-500/20 rounded text-white"
+                    className="w-full px-3 py-2 bg-[#12161F] border border-white/10 rounded-xl text-white"
                     placeholder="Current password"
                   />
                   <input
                     type="password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full px-3 py-2 bg-green-900/50 border border-amber-500/20 rounded text-white"
+                    className="w-full px-3 py-2 bg-[#12161F] border border-white/10 rounded-xl text-white"
                     placeholder="New password (min 6 chars)"
                   />
                   <input
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-3 py-2 bg-green-900/50 border border-amber-500/20 rounded text-white"
+                    className="w-full px-3 py-2 bg-[#12161F] border border-white/10 rounded-xl text-white"
                     placeholder="Confirm new password"
                   />
                   <div className="flex gap-2">
-                    <button onClick={savePassword} className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded text-white">
+                    <button onClick={savePassword} className="px-4 py-2 bg-gradient-to-r from-[#10B981] to-[#059669] hover:shadow-[0_6px_24px_rgba(16,185,129,0.4)] rounded-xl text-white">
                       Update
                     </button>
                     <button
@@ -2113,7 +2115,7 @@ if (screen === 'settings') {
                         setNewPassword('');
                         setConfirmPassword('');
                       }}
-                      className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-white"
+                      className="px-4 py-2 bg-[#475569] hover:bg-[#64748B] rounded-xl text-white"
                     >
                       Cancel
                     </button>
@@ -2124,11 +2126,11 @@ if (screen === 'settings') {
 
             {/* Delete Account */}
             <div className="bg-red-900/20 border border-red-700 rounded-lg p-4">
-              <label className="block text-sm text-[#EF4444] mb-2 font-semibold">⚠️ DANGER ZONE</label>
+              <label className="block text-sm text-[#EF4444] mb-2 font-semibold">Danger Zone</label>
               {!showDeleteConfirm ? (
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded text-white"
+                  className="px-4 py-2 bg-gradient-to-r from-[#EF4444] to-[#DC2626] hover:shadow-[0_6px_24px_rgba(239,68,68,0.4)] rounded-xl text-white"
                 >
                   Delete Account
                 </button>
@@ -2141,11 +2143,11 @@ if (screen === 'settings') {
                     type="text"
                     value={deleteConfirmText}
                     onChange={(e) => setDeleteConfirmText(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-800 border border-red-500 rounded text-white"
+                    className="w-full px-3 py-2 bg-[#12161F] border border-[#EF4444] rounded-xl text-[#F8FAFC]"
                     placeholder="Type DELETE"
                   />
                   <div className="flex gap-2">
-                    <button onClick={deleteAccount} className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded text-white">
+                    <button onClick={deleteAccount} className="px-4 py-2 bg-gradient-to-r from-[#EF4444] to-[#DC2626] hover:shadow-[0_6px_24px_rgba(239,68,68,0.4)] rounded-xl text-white">
                       Confirm Delete
                     </button>
                     <button
@@ -2153,7 +2155,7 @@ if (screen === 'settings') {
                         setShowDeleteConfirm(false);
                         setDeleteConfirmText('');
                       }}
-                      className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-white"
+                      className="px-4 py-2 bg-[#475569] hover:bg-[#64748B] rounded-xl text-white"
                     >
                       Cancel
                     </button>
@@ -2168,15 +2170,15 @@ if (screen === 'settings') {
         {settingsTab === 'preferences' && (
           <div className="space-y-4">
             {/* Default Buy-in */}
-            <div className="bg-black/40 rounded-lg p-4 border border-amber-500/30">
-              <label className="block text-sm text-[#D4AF37] mb-2 font-semibold">DEFAULT BUY-IN</label>
+            <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-xl p-4 border border-white/10">
+              <label className="block text-sm text-[#D4AF37] mb-2 font-semibold">Default Buy-In</label>
               <div className="flex items-center gap-2">
                 <span className="text-[#D4AF37]">$</span>
                 <input
                   type="number"
                   value={userSettings.defaultBuyIn}
                   onChange={(e) => setUserSettings({...userSettings, defaultBuyIn: parseInt(e.target.value) || 0})}
-                  className="w-32 px-3 py-2 bg-green-900/50 border border-amber-500/20 rounded text-white"
+                  className="w-32 px-3 py-2 bg-[#12161F] border border-white/10 rounded-xl text-white"
                   min="0"
                 />
                 <span className="text-gray-400 text-sm">(auto-fills new sessions)</span>
@@ -2184,12 +2186,12 @@ if (screen === 'settings') {
             </div>
 
             {/* Payment Method */}
-            <div className="bg-black/40 rounded-lg p-4 border border-amber-500/30">
-              <label className="block text-sm text-[#D4AF37] mb-2 font-semibold">PREFERRED PAYMENT</label>
+            <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-xl p-4 border border-white/10">
+              <label className="block text-sm text-[#D4AF37] mb-2 font-semibold">Preferred Payment</label>
               <select
                 value={userSettings.preferredPayment}
                 onChange={(e) => setUserSettings({...userSettings, preferredPayment: e.target.value})}
-                className="w-full px-3 py-2 bg-green-900/50 border border-amber-500/20 rounded text-white"
+                className="w-full px-3 py-2 bg-[#12161F] border border-white/10 rounded-xl text-white"
               >
                 <option value="venmo">Venmo</option>
                 <option value="cashapp">Cash App</option>
@@ -2200,12 +2202,12 @@ if (screen === 'settings') {
             </div>
 
             {/* Currency */}
-            <div className="bg-black/40 rounded-lg p-4 border border-amber-500/30">
-              <label className="block text-sm text-[#D4AF37] mb-2 font-semibold">CURRENCY</label>
+            <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-xl p-4 border border-white/10">
+              <label className="block text-sm text-[#D4AF37] mb-2 font-semibold">Currency</label>
               <select
                 value={userSettings.currency}
                 onChange={(e) => setUserSettings({...userSettings, currency: e.target.value})}
-                className="w-full px-3 py-2 bg-green-900/50 border border-amber-500/20 rounded text-white"
+                className="w-full px-3 py-2 bg-[#12161F] border border-white/10 rounded-xl text-white"
               >
                 <option value="USD">USD - US Dollar ($)</option>
                 <option value="EUR">EUR - Euro (€)</option>
@@ -2217,13 +2219,13 @@ if (screen === 'settings') {
             </div>
 
             {/* Quick Buy-in Amounts */}
-            <div className="bg-black/40 rounded-lg p-4 border border-amber-500/30">
-              <label className="block text-sm text-[#D4AF37] mb-2 font-semibold">QUICK BUY-IN AMOUNTS</label>
+            <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-xl p-4 border border-white/10">
+              <label className="block text-sm text-[#D4AF37] mb-2 font-semibold">Quick Buy-In Amounts</label>
               {!editingQuickAmounts ? (
                 <div>
                   <div className="flex flex-wrap gap-2 mb-3">
                     {userSettings.quickBuyInAmounts.map((amount, index) => (
-                      <span key={index} className="px-3 py-1 bg-green-600 text-white rounded-lg">
+                      <span key={index} className="px-3 py-1 bg-gradient-to-r from-[#10B981] to-[#059669] text-white rounded-xl">
                         ${amount}
                       </span>
                     ))}
@@ -2233,7 +2235,7 @@ if (screen === 'settings') {
                       setEditingQuickAmounts(true);
                       setTempQuickAmounts([...userSettings.quickBuyInAmounts]);
                     }}
-                    className="px-3 py-1 bg-amber-600 hover:bg-amber-700 rounded text-white text-sm"
+                    className="px-3 py-1 bg-gradient-to-r from-[#D4AF37] to-[#C9A942] hover:shadow-[0_6px_24px_rgba(212,175,55,0.4)] rounded-xl text-white text-sm"
                   >
                     Customize
                   </button>
@@ -2248,7 +2250,7 @@ if (screen === 'settings') {
                           type="number"
                           value={amount}
                           onChange={(e) => updateQuickAmount(index, e.target.value)}
-                          className="w-32 px-3 py-2 bg-green-900/50 border border-amber-500/20 rounded text-white"
+                          className="w-32 px-3 py-2 bg-[#12161F] border border-white/10 rounded-xl text-white"
                           min="0"
                         />
                         <button
@@ -2262,12 +2264,12 @@ if (screen === 'settings') {
                   </div>
                   <button
                     onClick={addQuickAmount}
-                    className="px-3 py-1 bg-gray-600 hover:bg-gray-700 rounded text-white text-sm"
+                    className="px-3 py-1 bg-[#475569] hover:bg-[#64748B] rounded-xl text-white text-sm"
                   >
                     + Add Amount
                   </button>
                   <div className="flex gap-2 mt-3">
-                    <button onClick={saveQuickAmounts} className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded text-white">
+                    <button onClick={saveQuickAmounts} className="px-4 py-2 bg-gradient-to-r from-[#10B981] to-[#059669] hover:shadow-[0_6px_24px_rgba(16,185,129,0.4)] rounded-xl text-white">
                       Save
                     </button>
                     <button
@@ -2275,7 +2277,7 @@ if (screen === 'settings') {
                         setEditingQuickAmounts(false);
                         setTempQuickAmounts([]);
                       }}
-                      className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-white"
+                      className="px-4 py-2 bg-[#475569] hover:bg-[#64748B] rounded-xl text-white"
                     >
                       Cancel
                     </button>
@@ -2285,8 +2287,8 @@ if (screen === 'settings') {
             </div>
 
             {/* Sound Effects */}
-            <div className="bg-black/40 rounded-lg p-4 border border-amber-500/30">
-              <label className="block text-sm text-[#D4AF37] mb-2 font-semibold">SOUND EFFECTS</label>
+            <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-xl p-4 border border-white/10">
+              <label className="block text-sm text-[#D4AF37] mb-2 font-semibold">Sound Effects</label>
               <div className="flex items-center justify-between">
                 <span className="text-white">{userSettings.soundEnabled ? 'Enabled' : 'Disabled'}</span>
                 <button
@@ -2309,7 +2311,7 @@ if (screen === 'settings') {
             </div>
           </div>
         )}   
-        <button onClick={() => setScreen('home')} className="w-full bg-black/40 text-[#D4AF37] border border-amber-500/30 py-3 rounded-lg mt-6">
+        <button onClick={() => setScreen('home')} className="w-full bg-[#1E2433] hover:bg-[#252B3D] text-[#D4AF37] border border-white/10 hover:border-[#D4AF37]/50 py-3 rounded-xl mt-6 font-semibold transition-all duration-200">
           Back
         </button>
       </div>
