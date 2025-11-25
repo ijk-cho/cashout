@@ -15,6 +15,31 @@ import {
 } from 'firebase/firestore';
 import { auth } from './firebase';
 
+// User data cache to prevent N+1 queries
+const userCache = new Map();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+// Get user data with caching
+const getCachedUserData = async (userId) => {
+  const now = Date.now();
+  const cached = userCache.get(userId);
+
+  // Return cached data if it's still valid
+  if (cached && (now - cached.timestamp) < CACHE_DURATION) {
+    return cached.data;
+  }
+
+  // Fetch fresh data if not cached or expired
+  const userDoc = await getDoc(doc(db, 'users', userId));
+  if (userDoc.exists()) {
+    const userData = { id: userId, ...userDoc.data() };
+    userCache.set(userId, { data: userData, timestamp: now });
+    return userData;
+  }
+
+  return null;
+};
+
 // Generate friendship document ID (always smaller ID first for consistency)
 const getFriendshipId = (userId1, userId2) => {
   return [userId1, userId2].sort().join('_');
@@ -178,24 +203,25 @@ export const getFriends = async (userId = null) => {
   );
 
   const querySnapshot = await getDocs(q);
-  const friends = [];
 
-  for (const docSnap of querySnapshot.docs) {
+  // Use Promise.all to fetch all user data in parallel with caching
+  const friendPromises = querySnapshot.docs.map(async (docSnap) => {
     const data = docSnap.data();
     const friendId = data.users.find(id => id !== targetUserId);
 
-    // Get friend's user data
-    const friendDoc = await getDoc(doc(db, 'users', friendId));
-    if (friendDoc.exists()) {
-      friends.push({
-        id: friendId,
-        ...friendDoc.data(),
+    // Get friend's user data from cache
+    const friendUserData = await getCachedUserData(friendId);
+    if (friendUserData) {
+      return {
+        ...friendUserData,
         friendshipId: docSnap.id,
         friendsSince: data.acceptedAt
-      });
+      };
     }
-  }
+    return null;
+  });
 
+  const friends = (await Promise.all(friendPromises)).filter(f => f !== null);
   return friends;
 };
 
@@ -212,23 +238,24 @@ export const getPendingRequests = async () => {
   );
 
   const querySnapshot = await getDocs(q);
-  const requests = [];
 
-  for (const docSnap of querySnapshot.docs) {
+  // Use Promise.all to fetch all user data in parallel with caching
+  const requestPromises = querySnapshot.docs.map(async (docSnap) => {
     const data = docSnap.data();
 
-    // Get requester's user data
-    const requesterDoc = await getDoc(doc(db, 'users', data.requesterId));
-    if (requesterDoc.exists()) {
-      requests.push({
-        id: data.requesterId,
-        ...requesterDoc.data(),
+    // Get requester's user data from cache
+    const requesterUserData = await getCachedUserData(data.requesterId);
+    if (requesterUserData) {
+      return {
+        ...requesterUserData,
         friendshipId: docSnap.id,
         requestedAt: data.createdAt
-      });
+      };
     }
-  }
+    return null;
+  });
 
+  const requests = (await Promise.all(requestPromises)).filter(r => r !== null);
   return requests;
 };
 
@@ -245,23 +272,24 @@ export const getSentRequests = async () => {
   );
 
   const querySnapshot = await getDocs(q);
-  const requests = [];
 
-  for (const docSnap of querySnapshot.docs) {
+  // Use Promise.all to fetch all user data in parallel with caching
+  const requestPromises = querySnapshot.docs.map(async (docSnap) => {
     const data = docSnap.data();
 
-    // Get receiver's user data
-    const receiverDoc = await getDoc(doc(db, 'users', data.receiverId));
-    if (receiverDoc.exists()) {
-      requests.push({
-        id: data.receiverId,
-        ...receiverDoc.data(),
+    // Get receiver's user data from cache
+    const receiverUserData = await getCachedUserData(data.receiverId);
+    if (receiverUserData) {
+      return {
+        ...receiverUserData,
         friendshipId: docSnap.id,
         requestedAt: data.createdAt
-      });
+      };
     }
-  }
+    return null;
+  });
 
+  const requests = (await Promise.all(requestPromises)).filter(r => r !== null);
   return requests;
 };
 
@@ -281,28 +309,41 @@ export const subscribeToFriends = (callback) => {
     const pending = [];
     const sent = [];
 
-    for (const docSnap of snapshot.docs) {
+    // Use Promise.all to fetch all user data in parallel (more efficient than sequential)
+    const userDataPromises = snapshot.docs.map(async (docSnap) => {
       const data = docSnap.data();
       const friendId = data.users.find(id => id !== currentUser.uid);
 
-      // Get friend's user data
-      const friendDoc = await getDoc(doc(db, 'users', friendId));
-      if (friendDoc.exists()) {
-        const friendData = {
-          id: friendId,
-          ...friendDoc.data(),
-          friendshipId: docSnap.id,
-          status: data.status
+      // Get friend's user data from cache
+      const friendUserData = await getCachedUserData(friendId);
+      if (friendUserData) {
+        return {
+          friendData: {
+            ...friendUserData,
+            friendshipId: docSnap.id,
+            status: data.status
+          },
+          data
         };
+      }
+      return null;
+    });
 
-        if (data.status === 'accepted') {
-          friends.push({ ...friendData, friendsSince: data.acceptedAt });
-        } else if (data.status === 'pending') {
-          if (data.receiverId === currentUser.uid) {
-            pending.push({ ...friendData, requestedAt: data.createdAt });
-          } else {
-            sent.push({ ...friendData, requestedAt: data.createdAt });
-          }
+    const results = await Promise.all(userDataPromises);
+
+    // Process results
+    for (const result of results) {
+      if (!result) continue;
+
+      const { friendData, data } = result;
+
+      if (data.status === 'accepted') {
+        friends.push({ ...friendData, friendsSince: data.acceptedAt });
+      } else if (data.status === 'pending') {
+        if (data.receiverId === currentUser.uid) {
+          pending.push({ ...friendData, requestedAt: data.createdAt });
+        } else {
+          sent.push({ ...friendData, requestedAt: data.createdAt });
         }
       }
     }

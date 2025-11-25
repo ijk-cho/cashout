@@ -1,115 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback, lazy, Suspense } from 'react';
 import { TrendingUp, Trophy, Award, Flame, Target, Crown, Upload } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { storage } from './firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
 import { auth } from './firebase';
+
+// Lazy load the chart components to reduce initial bundle size
+const LineChart = lazy(() => import('recharts').then(module => ({ default: module.LineChart })));
+const Line = lazy(() => import('recharts').then(module => ({ default: module.Line })));
+const XAxis = lazy(() => import('recharts').then(module => ({ default: module.XAxis })));
+const YAxis = lazy(() => import('recharts').then(module => ({ default: module.YAxis })));
+const CartesianGrid = lazy(() => import('recharts').then(module => ({ default: module.CartesianGrid })));
+const Tooltip = lazy(() => import('recharts').then(module => ({ default: module.Tooltip })));
+const ResponsiveContainer = lazy(() => import('recharts').then(module => ({ default: module.ResponsiveContainer })));
 
 const ProfilePage = ({ user, gameHistory, onUpdateProfile, onBack }) => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [displayName, setDisplayName] = useState(user.displayName || '');
   const [uploading, setUploading] = useState(false);
 
-  // Calculate stats
-  const myGames = gameHistory.filter(g => g.myResult !== null);
-  const totalGames = myGames.length;
-  const wins = myGames.filter(g => parseFloat(g.myResult) > 0);
-  const losses = myGames.filter(g => parseFloat(g.myResult) < 0);
-  const totalProfit = myGames.reduce((sum, g) => sum + parseFloat(g.myResult), 0);
-  const winRate = totalGames > 0 ? ((wins.length / totalGames) * 100).toFixed(0) : 0;
-  const biggestWin = wins.length > 0 ? Math.max(...wins.map(g => parseFloat(g.myResult))) : 0;
-  const biggestLoss = losses.length > 0 ? Math.min(...losses.map(g => parseFloat(g.myResult))) : 0;
-  
-  // Average buy-in
-  const totalBuyIns = myGames.reduce((sum, g) => {
-    return sum + g.players.reduce((s, p) => s + parseFloat(p.buyIn), 0);
-  }, 0);
-  const avgBuyIn = totalGames > 0 ? (totalBuyIns / totalGames).toFixed(2) : 0;
-
-  // Favorite players (most played with)
-  const playerFrequency = {};
-  myGames.forEach(game => {
-    game.players.forEach(p => {
-      if (p.name !== user.displayName && p.name !== user.email) {
-        playerFrequency[p.name] = (playerFrequency[p.name] || 0) + 1;
-      }
-    });
-  });
-  const favoritePlayers = Object.entries(playerFrequency)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3);
-
-  // Monthly performance chart data
-  const monthlyData = {};
-  myGames.forEach(game => {
-    const month = new Date(game.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-    if (!monthlyData[month]) {
-      monthlyData[month] = 0;
-    }
-    monthlyData[month] += parseFloat(game.myResult);
-  });
-  const chartData = Object.entries(monthlyData)
-    .map(([month, profit]) => ({ month, profit: parseFloat(profit.toFixed(2)) }))
-    .slice(-6); // Last 6 months
-
-  // Achievements
-  const achievements = [
-    { 
-      id: 'first_win', 
-      icon: Trophy, 
-      name: 'First Win', 
-      desc: 'Win your first game',
-      unlocked: wins.length > 0,
-      color: 'text-yellow-400'
-    },
-    { 
-      id: 'streak_5', 
-      icon: Flame, 
-      name: '5 Game Win Streak', 
-      desc: 'Win 5 games in a row',
-      unlocked: checkWinStreak(myGames, 5),
-      color: 'text-orange-400'
-    },
-    { 
-      id: 'big_night', 
-      icon: Award, 
-      name: '$100+ Single Night', 
-      desc: 'Win $100+ in one session',
-      unlocked: biggestWin >= 100,
-      color: 'text-emerald-400'
-    },
-    { 
-      id: 'games_10', 
-      icon: Target, 
-      name: '10 Games Played', 
-      desc: 'Play 10 games total',
-      unlocked: totalGames >= 10,
-      color: 'text-blue-400'
-    },
-    { 
-      id: 'games_50', 
-      icon: Crown, 
-      name: '50 Games Played', 
-      desc: 'Play 50 games total',
-      unlocked: totalGames >= 50,
-      color: 'text-purple-400'
-    },
-    { 
-      id: 'best_month', 
-      icon: TrendingUp, 
-      name: 'Most Profitable Month', 
-      desc: 'Have your best month ever',
-      unlocked: chartData.length > 0 && Math.max(...chartData.map(d => d.profit)) > 0,
-      color: 'text-green-400'
-    }
-  ];
-
-  function checkWinStreak(games, targetStreak) {
+  // Memoize checkWinStreak function
+  const checkWinStreak = useCallback((games, targetStreak) => {
     let currentStreak = 0;
     let maxStreak = 0;
     const sortedGames = [...games].sort((a, b) => new Date(a.date) - new Date(b.date));
-    
+
     sortedGames.forEach(game => {
       if (parseFloat(game.myResult) > 0) {
         currentStreak++;
@@ -119,7 +34,135 @@ const ProfilePage = ({ user, gameHistory, onUpdateProfile, onBack }) => {
       }
     });
     return maxStreak >= targetStreak;
-  }
+  }, []);
+
+  // Calculate stats with memoization
+  const myGames = useMemo(() =>
+    gameHistory.filter(g => g.myResult !== null),
+    [gameHistory]
+  );
+
+  const totalGames = myGames.length;
+
+  const wins = useMemo(() =>
+    myGames.filter(g => parseFloat(g.myResult) > 0),
+    [myGames]
+  );
+
+  const losses = useMemo(() =>
+    myGames.filter(g => parseFloat(g.myResult) < 0),
+    [myGames]
+  );
+
+  const totalProfit = useMemo(() =>
+    myGames.reduce((sum, g) => sum + parseFloat(g.myResult), 0),
+    [myGames]
+  );
+
+  const winRate = useMemo(() =>
+    totalGames > 0 ? ((wins.length / totalGames) * 100).toFixed(0) : 0,
+    [wins.length, totalGames]
+  );
+
+  const biggestWin = useMemo(() =>
+    wins.length > 0 ? Math.max(...wins.map(g => parseFloat(g.myResult))) : 0,
+    [wins]
+  );
+
+  const biggestLoss = useMemo(() =>
+    losses.length > 0 ? Math.min(...losses.map(g => parseFloat(g.myResult))) : 0,
+    [losses]
+  );
+
+  // Average buy-in with memoization
+  const avgBuyIn = useMemo(() => {
+    const totalBuyIns = myGames.reduce((sum, g) => {
+      return sum + g.players.reduce((s, p) => s + parseFloat(p.buyIn), 0);
+    }, 0);
+    return totalGames > 0 ? (totalBuyIns / totalGames).toFixed(2) : 0;
+  }, [myGames, totalGames]);
+
+  // Favorite players (most played with) with memoization
+  const favoritePlayers = useMemo(() => {
+    const playerFrequency = {};
+    myGames.forEach(game => {
+      game.players.forEach(p => {
+        if (p.name !== user.displayName && p.name !== user.email) {
+          playerFrequency[p.name] = (playerFrequency[p.name] || 0) + 1;
+        }
+      });
+    });
+    return Object.entries(playerFrequency)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3);
+  }, [myGames, user.displayName, user.email]);
+
+  // Monthly performance chart data with memoization
+  const chartData = useMemo(() => {
+    const monthlyData = {};
+    myGames.forEach(game => {
+      const month = new Date(game.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      if (!monthlyData[month]) {
+        monthlyData[month] = 0;
+      }
+      monthlyData[month] += parseFloat(game.myResult);
+    });
+    return Object.entries(monthlyData)
+      .map(([month, profit]) => ({ month, profit: parseFloat(profit.toFixed(2)) }))
+      .slice(-6); // Last 6 months
+  }, [myGames]);
+
+  // Achievements with memoization
+  const achievements = useMemo(() => [
+    {
+      id: 'first_win',
+      icon: Trophy,
+      name: 'First Win',
+      desc: 'Win your first game',
+      unlocked: wins.length > 0,
+      color: 'text-yellow-400'
+    },
+    {
+      id: 'streak_5',
+      icon: Flame,
+      name: '5 Game Win Streak',
+      desc: 'Win 5 games in a row',
+      unlocked: checkWinStreak(myGames, 5),
+      color: 'text-orange-400'
+    },
+    {
+      id: 'big_night',
+      icon: Award,
+      name: '$100+ Single Night',
+      desc: 'Win $100+ in one session',
+      unlocked: biggestWin >= 100,
+      color: 'text-emerald-400'
+    },
+    {
+      id: 'games_10',
+      icon: Target,
+      name: '10 Games Played',
+      desc: 'Play 10 games total',
+      unlocked: totalGames >= 10,
+      color: 'text-blue-400'
+    },
+    {
+      id: 'games_50',
+      icon: Crown,
+      name: '50 Games Played',
+      desc: 'Play 50 games total',
+      unlocked: totalGames >= 50,
+      color: 'text-purple-400'
+    },
+    {
+      id: 'best_month',
+      icon: TrendingUp,
+      name: 'Most Profitable Month',
+      desc: 'Have your best month ever',
+      unlocked: chartData.length > 0 && Math.max(...chartData.map(d => d.profit)) > 0,
+      color: 'text-green-400'
+    }
+  ], [wins.length, myGames, checkWinStreak, biggestWin, totalGames, chartData]);
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
@@ -173,11 +216,17 @@ const ProfilePage = ({ user, gameHistory, onUpdateProfile, onBack }) => {
     }
   };
 
-  const memberSince = user.metadata?.creationTime 
-    ? new Date(user.metadata.creationTime).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-    : 'Recently';
+  const memberSince = useMemo(() =>
+    user.metadata?.creationTime
+      ? new Date(user.metadata.creationTime).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+      : 'Recently',
+    [user.metadata?.creationTime]
+  );
 
-  const favoriteGroup = gameHistory.find(g => g.sessionName)?.sessionName || 'None yet';
+  const favoriteGroup = useMemo(() =>
+    gameHistory.find(g => g.sessionName)?.sessionName || 'None yet',
+    [gameHistory]
+  );
 
   return (
     <div className="min-h-screen bg-[#0A0E14] text-[#F8FAFC] p-6 relative overflow-hidden">
@@ -290,18 +339,24 @@ const ProfilePage = ({ user, gameHistory, onUpdateProfile, onBack }) => {
         {chartData.length > 0 && (
           <div className="bg-gradient-to-br from-[#1E2433] to-[#252B3D] rounded-2xl p-6 mb-6 border border-white/10 shadow-xl">
             <h3 className="text-xl font-bold font-serif text-[#D4AF37] mb-4">Monthly Performance</h3>
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
-                <XAxis dataKey="month" stroke="#D4AF37" />
-                <YAxis stroke="#D4AF37" />
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#1E2433', border: '1px solid rgba(212, 175, 55, 0.3)', borderRadius: '12px' }}
-                  labelStyle={{ color: '#D4AF37', fontWeight: 'bold' }}
-                />
-                <Line type="monotone" dataKey="profit" stroke="#D4AF37" strokeWidth={3} />
-              </LineChart>
-            </ResponsiveContainer>
+            <Suspense fallback={
+              <div className="flex items-center justify-center h-[250px] text-[#64748B]">
+                Loading chart...
+              </div>
+            }>
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
+                  <XAxis dataKey="month" stroke="#D4AF37" />
+                  <YAxis stroke="#D4AF37" />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#1E2433', border: '1px solid rgba(212, 175, 55, 0.3)', borderRadius: '12px' }}
+                    labelStyle={{ color: '#D4AF37', fontWeight: 'bold' }}
+                  />
+                  <Line type="monotone" dataKey="profit" stroke="#D4AF37" strokeWidth={3} />
+                </LineChart>
+              </ResponsiveContainer>
+            </Suspense>
           </div>
         )}
 
