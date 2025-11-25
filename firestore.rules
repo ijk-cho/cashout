@@ -30,17 +30,38 @@ service cloud.firestore {
 
     // Friendships collection
     match /friendships/{friendshipId} {
+      // Helper function to validate friendship data structure
+      function isValidFriendshipCreate() {
+        let data = request.resource.data;
+        return data.keys().hasAll(['users', 'requesterId', 'receiverId', 'status', 'createdAt', 'updatedAt']) &&
+               data.users is list &&
+               data.users.size() == 2 &&
+               request.auth.uid == data.requesterId &&
+               request.auth.uid in data.users &&
+               data.receiverId in data.users &&
+               data.status == 'pending';
+      }
+
+      // Helper function to validate friendship update
+      function isValidFriendshipUpdate() {
+        let data = request.resource.data;
+        // User must be the receiver to accept/update
+        return request.auth.uid == resource.data.receiverId &&
+               data.status in ['pending', 'accepted'];
+      }
+
       // Users can read friendships where they are a participant
       allow read: if isAuthenticated() &&
                      request.auth.uid in resource.data.users;
 
-      // Users can create friendships where they are a participant
-      allow create: if isAuthenticated() &&
-                       request.auth.uid in request.resource.data.users;
+      // Users can create friendships where they are the requester
+      allow create: if isAuthenticated() && isValidFriendshipCreate();
 
       // Users can update friendships where they are a participant
+      // Requester can cancel (delete), receiver can accept (update)
       allow update: if isAuthenticated() &&
-                       request.auth.uid in resource.data.users;
+                       request.auth.uid in resource.data.users &&
+                       (isValidFriendshipUpdate() || request.auth.uid == resource.data.requesterId);
 
       // Users can delete friendships where they are a participant
       allow delete: if isAuthenticated() &&
