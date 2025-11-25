@@ -104,11 +104,19 @@ export const GameProvider = ({ children }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        await ensureUserDocument(firebaseUser);
+      try {
+        if (firebaseUser) {
+          await ensureUserDocument(firebaseUser);
+        }
+        setUser(firebaseUser);
+      } catch (error) {
+        console.error('Error ensuring user document:', error);
+        // Still set the user even if ensureUserDocument fails
+        setUser(firebaseUser);
+      } finally {
+        // Always set authChecked to true, even if there's an error
+        setAuthChecked(true);
       }
-      setUser(firebaseUser);
-      setAuthChecked(true);
     });
 
     return () => unsubscribe();
