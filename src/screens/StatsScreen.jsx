@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TrendingUp, DollarSign, Target, Award, BarChart3, PieChart } from 'lucide-react';
 import { useGame } from '../contexts/GameContext';
@@ -12,39 +12,75 @@ const StatsScreen = () => {
     navigate('/');
   };
 
-  const stats = calculateStats();
+  const stats = useMemo(() => calculateStats(), [calculateStats, gameHistory]);
 
-  // Calculate additional detailed stats
-  const myGames = gameHistory.filter(g => g.myResult !== null);
-  const wins = myGames.filter(g => parseFloat(g.myResult) > 0);
-  const losses = myGames.filter(g => parseFloat(g.myResult) < 0);
-  const breakEven = myGames.filter(g => parseFloat(g.myResult) === 0);
+  // Calculate additional detailed stats with memoization
+  const myGames = useMemo(() =>
+    gameHistory.filter(g => g.myResult !== null),
+    [gameHistory]
+  );
 
-  const biggestWin = wins.length > 0 ? Math.max(...wins.map(g => parseFloat(g.myResult))) : 0;
-  const biggestLoss = losses.length > 0 ? Math.min(...losses.map(g => parseFloat(g.myResult))) : 0;
-  const averageWin = wins.length > 0 ? (wins.reduce((sum, g) => sum + parseFloat(g.myResult), 0) / wins.length) : 0;
-  const averageLoss = losses.length > 0 ? (losses.reduce((sum, g) => sum + parseFloat(g.myResult), 0) / losses.length) : 0;
+  const wins = useMemo(() =>
+    myGames.filter(g => parseFloat(g.myResult) > 0),
+    [myGames]
+  );
 
-  // Calculate average players per game
-  const totalPlayers = myGames.reduce((sum, g) => sum + (g.players?.length || 0), 0);
-  const avgPlayers = myGames.length > 0 ? (totalPlayers / myGames.length).toFixed(1) : 0;
+  const losses = useMemo(() =>
+    myGames.filter(g => parseFloat(g.myResult) < 0),
+    [myGames]
+  );
 
-  // Calculate monthly performance
-  const monthlyStats = {};
-  myGames.forEach(game => {
-    const month = new Date(game.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-    if (!monthlyStats[month]) {
-      monthlyStats[month] = { total: 0, games: 0 };
-    }
-    monthlyStats[month].total += parseFloat(game.myResult);
-    monthlyStats[month].games += 1;
-  });
+  const breakEven = useMemo(() =>
+    myGames.filter(g => parseFloat(g.myResult) === 0),
+    [myGames]
+  );
 
-  const bestMonth = Object.entries(monthlyStats)
-    .sort((a, b) => b[1].total - a[1].total)[0];
+  const biggestWin = useMemo(() =>
+    wins.length > 0 ? Math.max(...wins.map(g => parseFloat(g.myResult))) : 0,
+    [wins]
+  );
 
-  const worstMonth = Object.entries(monthlyStats)
-    .sort((a, b) => a[1].total - b[1].total)[0];
+  const biggestLoss = useMemo(() =>
+    losses.length > 0 ? Math.min(...losses.map(g => parseFloat(g.myResult))) : 0,
+    [losses]
+  );
+
+  const averageWin = useMemo(() =>
+    wins.length > 0 ? (wins.reduce((sum, g) => sum + parseFloat(g.myResult), 0) / wins.length) : 0,
+    [wins]
+  );
+
+  const averageLoss = useMemo(() =>
+    losses.length > 0 ? (losses.reduce((sum, g) => sum + parseFloat(g.myResult), 0) / losses.length) : 0,
+    [losses]
+  );
+
+  // Calculate average players per game with memoization
+  const avgPlayers = useMemo(() => {
+    const totalPlayers = myGames.reduce((sum, g) => sum + (g.players?.length || 0), 0);
+    return myGames.length > 0 ? (totalPlayers / myGames.length).toFixed(1) : 0;
+  }, [myGames]);
+
+  // Calculate monthly performance with memoization
+  const { monthlyStats, bestMonth, worstMonth } = useMemo(() => {
+    const stats = {};
+    myGames.forEach(game => {
+      const month = new Date(game.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      if (!stats[month]) {
+        stats[month] = { total: 0, games: 0 };
+      }
+      stats[month].total += parseFloat(game.myResult);
+      stats[month].games += 1;
+    });
+
+    const best = Object.entries(stats)
+      .sort((a, b) => b[1].total - a[1].total)[0];
+
+    const worst = Object.entries(stats)
+      .sort((a, b) => a[1].total - b[1].total)[0];
+
+    return { monthlyStats: stats, bestMonth: best, worstMonth: worst };
+  }, [myGames]);
 
   return (
     <div className="min-h-screen bg-[#0A0E14] p-6 relative overflow-hidden">

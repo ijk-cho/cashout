@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../firebase';
 import { DollarSign, Users, Plus, History, TrendingUp, Trophy, UserPlus, X } from 'lucide-react';
@@ -32,7 +32,7 @@ const HomePage = () => {
   const [showInstallButton, setShowInstallButton] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
 
-  const stats = calculateStats();
+  const stats = useMemo(() => calculateStats(), [calculateStats, gameHistory]);
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e) => {

@@ -1,23 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { auth } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { GameProvider, useGame } from './contexts/GameContext';
 import Auth from './Auth';
-import ProfilePage from './ProfilePage';
-import HomePage from './screens/HomePage';
-import HostGameScreen from './screens/HostGameScreen';
-import JoinGameScreen from './screens/JoinGameScreen';
-import GameLobbyScreen from './screens/GameLobbyScreen';
-import SettlementScreen from './screens/SettlementScreen';
-import ProfileScreen from './screens/ProfileScreen';
-import HistoryScreen from './screens/HistoryScreen';
-import StatsScreen from './screens/StatsScreen';
-import LeaderboardsScreen from './screens/LeaderboardsScreen';
-import FriendsScreen from './screens/FriendsScreen';
-import SettingsScreen from './screens/SettingsScreen';
-import GroupsScreen from './screens/GroupsScreen';
-import GameScreen from './screens/GameScreen';
+
+// Lazy load all screen components
+const HomePage = lazy(() => import('./screens/HomePage'));
+const HostGameScreen = lazy(() => import('./screens/HostGameScreen'));
+const JoinGameScreen = lazy(() => import('./screens/JoinGameScreen'));
+const GameLobbyScreen = lazy(() => import('./screens/GameLobbyScreen'));
+const SettlementScreen = lazy(() => import('./screens/SettlementScreen'));
+const ProfileScreen = lazy(() => import('./screens/ProfileScreen'));
+const HistoryScreen = lazy(() => import('./screens/HistoryScreen'));
+const StatsScreen = lazy(() => import('./screens/StatsScreen'));
+const LeaderboardsScreen = lazy(() => import('./screens/LeaderboardsScreen'));
+const FriendsScreen = lazy(() => import('./screens/FriendsScreen'));
+const SettingsScreen = lazy(() => import('./screens/SettingsScreen'));
+const GroupsScreen = lazy(() => import('./screens/GroupsScreen'));
+const GameScreen = lazy(() => import('./screens/GameScreen'));
 
 // Import components and utilities that are still needed for non-refactored screens
 import { DollarSign, Users, Plus, Share2, Copy, Check, TrendingUp, History, ArrowRight, Trophy, UserPlus, User, X, Search } from 'lucide-react';
@@ -153,31 +154,40 @@ const AuthGuard = ({ children }) => {
   return children;
 };
 
+// Loading fallback component
+const LazyLoadFallback = () => (
+  <div className="min-h-screen bg-[#0A0E14] flex items-center justify-center">
+    <LoadingSpinner />
+  </div>
+);
+
 // Main App Routes
 const AppRoutes = () => {
   return (
     <>
       <GameCodeHandler />
-      <Routes>
-        <Route path="/" element={<AuthGuard><HomePage /></AuthGuard>} />
-        <Route path="/host" element={<AuthGuard><HostGameScreen /></AuthGuard>} />
-        <Route path="/join" element={<AuthGuard><JoinGameScreen /></AuthGuard>} />
-        <Route path="/lobby" element={<AuthGuard><GameLobbyScreen /></AuthGuard>} />
-        <Route path="/settlement" element={<AuthGuard><SettlementScreen /></AuthGuard>} />
+      <Suspense fallback={<LazyLoadFallback />}>
+        <Routes>
+          <Route path="/" element={<AuthGuard><HomePage /></AuthGuard>} />
+          <Route path="/host" element={<AuthGuard><HostGameScreen /></AuthGuard>} />
+          <Route path="/join" element={<AuthGuard><JoinGameScreen /></AuthGuard>} />
+          <Route path="/lobby" element={<AuthGuard><GameLobbyScreen /></AuthGuard>} />
+          <Route path="/settlement" element={<AuthGuard><SettlementScreen /></AuthGuard>} />
 
-        {/* Refactored screen routes */}
-        <Route path="/profile" element={<AuthGuard><ProfileScreen /></AuthGuard>} />
-        <Route path="/history" element={<AuthGuard><HistoryScreen /></AuthGuard>} />
-        <Route path="/stats" element={<AuthGuard><StatsScreen /></AuthGuard>} />
-        <Route path="/leaderboards" element={<AuthGuard><LeaderboardsScreen /></AuthGuard>} />
-        <Route path="/friends" element={<AuthGuard><FriendsScreen /></AuthGuard>} />
-        <Route path="/settings" element={<AuthGuard><SettingsScreen /></AuthGuard>} />
-        <Route path="/groups" element={<AuthGuard><GroupsScreen /></AuthGuard>} />
-        <Route path="/game" element={<AuthGuard><GameScreen /></AuthGuard>} />
+          {/* Refactored screen routes */}
+          <Route path="/profile" element={<AuthGuard><ProfileScreen /></AuthGuard>} />
+          <Route path="/history" element={<AuthGuard><HistoryScreen /></AuthGuard>} />
+          <Route path="/stats" element={<AuthGuard><StatsScreen /></AuthGuard>} />
+          <Route path="/leaderboards" element={<AuthGuard><LeaderboardsScreen /></AuthGuard>} />
+          <Route path="/friends" element={<AuthGuard><FriendsScreen /></AuthGuard>} />
+          <Route path="/settings" element={<AuthGuard><SettingsScreen /></AuthGuard>} />
+          <Route path="/groups" element={<AuthGuard><GroupsScreen /></AuthGuard>} />
+          <Route path="/game" element={<AuthGuard><GameScreen /></AuthGuard>} />
 
-        {/* Catch-all redirect */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          {/* Catch-all redirect */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
     </>
   );
 };

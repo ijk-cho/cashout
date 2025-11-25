@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { History, TrendingUp, TrendingDown, Calendar, Users, Trash2 } from 'lucide-react';
 import { useGame } from '../contexts/GameContext';
@@ -24,13 +24,19 @@ const HistoryScreen = () => {
     }
   };
 
-  const filteredGames = gameHistory.filter(game => {
-    if (filter === 'wins') return parseFloat(game.myResult) > 0;
-    if (filter === 'losses') return parseFloat(game.myResult) < 0;
-    return true;
-  });
+  const filteredGames = useMemo(() =>
+    gameHistory.filter(game => {
+      if (filter === 'wins') return parseFloat(game.myResult) > 0;
+      if (filter === 'losses') return parseFloat(game.myResult) < 0;
+      return true;
+    }),
+    [gameHistory, filter]
+  );
 
-  const sortedGames = [...filteredGames].sort((a, b) => new Date(b.date) - new Date(a.date));
+  const sortedGames = useMemo(() =>
+    [...filteredGames].sort((a, b) => new Date(b.date) - new Date(a.date)),
+    [filteredGames]
+  );
 
   return (
     <div className="min-h-screen bg-[#0A0E14] p-6 relative overflow-hidden">
