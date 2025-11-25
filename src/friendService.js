@@ -49,31 +49,51 @@ const getFriendshipId = (userId1, userId2) => {
 export const ensureUserDocument = async (user) => {
   if (!user || !user.uid) return;
 
-  const userRef = doc(db, 'users', user.uid);
-  const userDoc = await getDoc(userRef);
+  try {
+    const userRef = doc(db, 'users', user.uid);
 
-  if (!userDoc.exists()) {
-    // Create new user document
-    await setDoc(userRef, {
-      email: user.email?.toLowerCase() || '',
-      displayName: user.displayName || '',
-      photoURL: user.photoURL || '',
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-      stats: {
-        totalGames: 0,
-        totalWinnings: 0,
-        gamesWon: 0,
-        winRate: 0
-      }
-    });
-  } else {
-    // Update existing document with latest info
-    await updateDoc(userRef, {
-      displayName: user.displayName || userDoc.data().displayName || '',
-      photoURL: user.photoURL || userDoc.data().photoURL || '',
-      updatedAt: serverTimestamp()
-    });
+    // Add timeout to prevent hanging
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Firestore operation timed out')), 10000)
+    );
+
+    const userDoc = await Promise.race([
+      getDoc(userRef),
+      timeoutPromise
+    ]);
+
+    if (!userDoc.exists()) {
+      // Create new user document
+      await Promise.race([
+        setDoc(userRef, {
+          email: user.email?.toLowerCase() || '',
+          displayName: user.displayName || '',
+          photoURL: user.photoURL || '',
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          stats: {
+            totalGames: 0,
+            totalWinnings: 0,
+            gamesWon: 0,
+            winRate: 0
+          }
+        }),
+        timeoutPromise
+      ]);
+    } else {
+      // Update existing document with latest info
+      await Promise.race([
+        updateDoc(userRef, {
+          displayName: user.displayName || userDoc.data().displayName || '',
+          photoURL: user.photoURL || userDoc.data().photoURL || '',
+          updatedAt: serverTimestamp()
+        }),
+        timeoutPromise
+      ]);
+    }
+  } catch (error) {
+    console.error('Error in ensureUserDocument:', error);
+    // Don't throw - allow auth to continue even if Firestore fails
   }
 };
 
