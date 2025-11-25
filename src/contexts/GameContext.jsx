@@ -5,7 +5,8 @@ import { createGame, getGameByCode, updateGame, subscribeToGame } from '../gameS
 import {
   sendGameInvite,
   subscribeToFriends,
-  subscribeToGameInvites
+  subscribeToGameInvites,
+  ensureUserDocument
 } from '../friendService';
 import { soundManager } from '../sounds';
 
@@ -102,7 +103,10 @@ export const GameProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        await ensureUserDocument(firebaseUser);
+      }
       setUser(firebaseUser);
       setAuthChecked(true);
     });

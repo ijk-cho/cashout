@@ -20,6 +20,38 @@ const getFriendshipId = (userId1, userId2) => {
   return [userId1, userId2].sort().join('_');
 };
 
+// Ensure user document exists in Firestore
+export const ensureUserDocument = async (user) => {
+  if (!user || !user.uid) return;
+
+  const userRef = doc(db, 'users', user.uid);
+  const userDoc = await getDoc(userRef);
+
+  if (!userDoc.exists()) {
+    // Create new user document
+    await setDoc(userRef, {
+      email: user.email?.toLowerCase() || '',
+      displayName: user.displayName || '',
+      photoURL: user.photoURL || '',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      stats: {
+        totalGames: 0,
+        totalWinnings: 0,
+        gamesWon: 0,
+        winRate: 0
+      }
+    });
+  } else {
+    // Update existing document with latest info
+    await updateDoc(userRef, {
+      displayName: user.displayName || userDoc.data().displayName || '',
+      photoURL: user.photoURL || userDoc.data().photoURL || '',
+      updatedAt: serverTimestamp()
+    });
+  }
+};
+
 // Send friend request
 export const sendFriendRequest = async (friendEmail) => {
   const currentUser = auth.currentUser;

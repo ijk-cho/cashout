@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { auth } from './firebase';
-import { 
-  signInWithPopup, 
+import {
+  signInWithPopup,
   GoogleAuthProvider,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  signOut 
+  signOut
 } from 'firebase/auth';
 import { DollarSign } from 'lucide-react';
+import { ensureUserDocument } from './friendService';
 
 const Auth = ({ onAuthSuccess }) => {
   const [email, setEmail] = useState('');
@@ -22,6 +23,7 @@ const Auth = ({ onAuthSuccess }) => {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
+      await ensureUserDocument(result.user);
       onAuthSuccess(result.user);
     } catch (error) {
       setError(error.message);
@@ -35,13 +37,15 @@ const Auth = ({ onAuthSuccess }) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    
+
     try {
       if (isSignUp) {
         const result = await createUserWithEmailAndPassword(auth, email, password);
+        await ensureUserDocument(result.user);
         onAuthSuccess(result.user);
       } else {
         const result = await signInWithEmailAndPassword(auth, email, password);
+        await ensureUserDocument(result.user);
         onAuthSuccess(result.user);
       }
     } catch (error) {
